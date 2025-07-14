@@ -4,6 +4,6 @@
   "title": "Assembly Combinator",
   "author": "joalon",
   "factorio_version": "2.0",
-  "dependencies": ["base >= 2.0"],
+  "dependencies": ["base >= 2.0", "flib >= 0.16.3"],
   "description": "Adds assembly combinators that allow programming signal logic using a simple assembly-like language"
 }

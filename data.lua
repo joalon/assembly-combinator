@@ -1,48 +1,23 @@
-local fireArmor = table.deepcopy(data.raw["armor"]["heavy-armor"]) -- copy the table that defines the heavy armor item into the fireArmor variable
+local flib = require("__flib__.data-util")
 
-fireArmor.name = "fire-armor"
-fireArmor.icons = {
-	{
-		icon = fireArmor.icon,
-		icon_size = fireArmor.icon_size,
-		tint = { r = 1, g = 0, b = 0, a = 0.3 },
-	},
-}
+local assembly_combinator =
+	flib.copy_prototype(data.raw["constant-combinator"]["constant-combinator"], "assembly-combinator")
 
-fireArmor.resistances = {
-	{
-		type = "physical",
-		decrease = 6,
-		percent = 10,
-	},
-	{
-		type = "explosion",
-		decrease = 10,
-		percent = 30,
-	},
-	{
-		type = "acid",
-		decrease = 5,
-		percent = 30,
-	},
-	{
-		type = "fire",
-		decrease = 0,
-		percent = 100,
-	},
-}
+local assembly_combinator_item = flib.copy_prototype(data.raw["item"]["constant-combinator"], "assembly-combinator")
 
--- create the recipe prototype from scratch
-local recipe = {
+local assembly_combinator_recipe = {
 	type = "recipe",
-	name = "fire-armor",
-	enabled = true,
-	energy_required = 8, -- time to craft in seconds (at crafting speed 1)
+	name = "assembly-combinator",
 	ingredients = {
-		{ type = "item", name = "copper-plate", amount = 200 },
-		{ type = "item", name = "steel-plate", amount = 50 },
+		{ type = "item", name = "constant-combinator", amount = 1 },
+		{ type = "item", name = "advanced-circuit", amount = 2 },
+		{ type = "item", name = "iron-plate", amount = 2 },
 	},
-	results = { { type = "item", name = "fire-armor", amount = 1 } },
+	enabled = true,
+	results = { {
+		type = "item",
+		name = "assembly-combinator",
+		amount = 1,
+	} },
 }
-
-data:extend({ fireArmor, recipe })
+data:extend({ assembly_combinator, assembly_combinator_item, assembly_combinator_recipe })
