@@ -9,13 +9,15 @@ script.on_event(defines.events.on_gui_opened, function(event)
 end)
 
 function create_custom_gui(player, entity)
-	if player.gui.screen.assembly_combinator_gui then
-		player.gui.screen.assembly_combinator_gui.destroy()
+	local gui_name = "assembly_combinator_gui_" .. entity.unit_number
+	if player.gui.screen[gui_name] then
+		player.gui.screen.gui_name.bring_to_front()
+		return
 	end
 
 	local frame = player.gui.screen.add({
 		type = "frame",
-		name = "assembly_combinator_gui",
+		name = gui_name,
 		direction = "vertical",
 	})
 	frame.auto_center = true
@@ -66,12 +68,11 @@ end
 
 script.on_event(defines.events.on_gui_click, function(event)
 	if event.element.name == "assembly-combinator-close-button" then
-		if event.element.parent.parent.name == "assembly_combinator_gui" then
-			event.element.parent.parent.destroy()
-		end
+		event.element.parent.parent.destroy()
 	end
 end)
 
+-- TODO: Almost certainly needs updating after introducing multiple windows...
 script.on_event(defines.events.on_gui_closed, function(event)
 	if event.element and event.element.name == "assembly_combinator_gui" then
 		event.element.destroy()
