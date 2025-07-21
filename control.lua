@@ -15,7 +15,16 @@ script.on_init(function()
 		{ ["assembly-combinator"] = 5, ["constant-combinator"] = 5, ["selector-combinator"] = 5 }
 	)
 
-	storage.players = {}
+	storage.assembly_combinators = {}
 end)
 
-require("script.asm")
+script.on_load(function()
+	storage.assembly_combinators = storage.assembly_combinators or {}
+end)
+
+script.on_configuration_changed(function()
+	storage.assembly_combinators = storage.assembly_combinators or {}
+end)
+
+require("script.gui")
+require("script.cpu")
