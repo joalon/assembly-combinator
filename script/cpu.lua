@@ -68,13 +68,10 @@ function module:step()
 end
 
 function module:advance_ip()
-	if self.flags.jump_executed then
+	if self.flags.jump_executed or self.flags.is_halted then
 		return
 	end
-	self.instruction_pointer = (self.instruction_pointer + 1) % (#self.memory + 1)
-	if self.instruction_pointer == 0 then
-		self.instruction_pointer = 1
-	end
+	self.instruction_pointer = (self.instruction_pointer % #self.memory) + 1
 end
 
 function module:is_halted()
