@@ -64,11 +64,39 @@ function create_custom_gui(player, entity)
 		type = "label",
 		caption = "Position: " .. entity.position.x .. ", " .. entity.position.y,
 	})
+
+	local code = ""
+	for i, line in ipairs(storage.assembly_combinators[entity.unit_number].cpu:get_code()) do
+		if i == 1 then
+			code = line
+		else
+			code = code .. "\n" .. line
+		end
+	end
+	content.add({
+		type = "text-box",
+		name = "combinator_memory",
+		text = code,
+	})
+
+	content.add({
+		type = "button",
+		name = "assembly-combinator-save-button",
+		caption = "Save",
+	})
 end
 
 script.on_event(defines.events.on_gui_click, function(event)
 	if event.element.name == "assembly-combinator-close-button" then
 		event.element.parent.parent.destroy()
+	elseif event.element.name == "assembly-combinator-save-button" then
+		local unit_number = tonumber(string.match(event.element.parent.parent.name, "%d+"))
+
+		local updated_code = {}
+		for line in string.gmatch(event.element.parent["combinator_memory"].text, "[^\r\n]+") do
+			table.insert(updated_code, line)
+		end
+		storage.assembly_combinators[unit_number].cpu:update_code(updated_code)
 	end
 end)
 

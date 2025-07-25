@@ -9,11 +9,12 @@ script.on_init(function()
 			remote.call("freeplay", "set_disable_crashsite", true)
 		end
 	end
-	remote.call(
-		"freeplay",
-		"set_created_items",
-		{ ["assembly-combinator"] = 5, ["constant-combinator"] = 5, ["selector-combinator"] = 5 }
-	)
+	remote.call("freeplay", "set_created_items", {
+		["assembly-combinator"] = 5,
+		["constant-combinator"] = 5,
+		["selector-combinator"] = 5,
+		["medium-electric-pole"] = 10,
+	})
 
 	storage.assembly_combinators = {}
 end)
@@ -27,4 +28,4 @@ script.on_configuration_changed(function()
 end)
 
 require("script.gui")
-require("script.cpu")
+require("script.events")

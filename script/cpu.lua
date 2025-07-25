@@ -21,6 +21,25 @@ function module.new(code)
 	return cpuClass
 end
 
+function module:update_code(code)
+	self.memory = code or { "HLT" }
+	self.instruction_pointer = 1
+	self.registers = {
+		x1 = { nil, 0 },
+		x2 = { nil, 0 },
+		input = { nil, 0 },
+		output = { nil, 0 },
+	}
+	self.flags = {
+		is_halted = false,
+		jump_executed = false,
+	}
+end
+
+function module:get_code()
+	return self.memory
+end
+
 function module:step()
 	if self.flags.is_halted then
 		return
@@ -41,6 +60,8 @@ function module:step()
 			local result = self.registers[args[1]][2] + tonumber(args[2])
 			self.registers[args[1]][2] = result
 		end
+	elseif instruction == "MOV" then
+		self.registers[args[1]] = { "copper-plate", tonumber(args[2]) }
 	end
 
 	self:advance_ip()
