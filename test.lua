@@ -44,3 +44,31 @@ describe("CPU tests", function()
 		assert.is_true(myCpu:is_halted())
 	end)
 end)
+
+describe("Parsing tests", function()
+	it("can parse some items", function()
+		local input = "[item=copper-plate]15"
+		local result = cpu.parse_item(input)
+
+		assert.are.equal(result.item, "copper-plate")
+		assert.are.equal(result.count, 15)
+
+		input = "17[item=copper-plate]"
+		result = cpu.parse_item(input)
+
+		assert.are.equal(result.item, "copper-plate")
+		assert.are.equal(result.count, 17)
+
+		input = "23 [item=iron-plate]"
+		result = cpu.parse_item(input)
+
+		assert.are.equal(result.item, "iron-plate")
+		assert.are.equal(result.count, 23)
+
+		input = "[item=iron-plate] 16"
+		result = cpu.parse_item(input)
+
+		assert.are.equal(result.item, "iron-plate")
+		assert.are.equal(result.count, 16)
+	end)
+end)

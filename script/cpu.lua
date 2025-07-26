@@ -82,4 +82,19 @@ function module:get_register(register_name)
 	return self.registers[register_name]
 end
 
+function module.parse_item(str)
+	local item, count = str:match("%[item=([^%]]+)%]%s*(%d+)")
+	if item and count then
+		return { item = item, count = tonumber(count) }
+	end
+
+	count, item = str:match("(%d+)%s*%[item=([^%]]+)%]")
+	if item and count then
+		return { item = item, count = tonumber(count) }
+	end
+
+	count = str:match("^%d+$")
+	return { item = "ac-generic-1", count = tonumber(count) }
+end
+
 return module
