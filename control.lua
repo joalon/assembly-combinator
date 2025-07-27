@@ -1,5 +1,4 @@
--- TODO: Remove on_init for release
-script.on_init(function()
+function ac_dev_mode()
 	local freeplay = remote.interfaces["freeplay"]
 	if freeplay then -- Disable freeplay popup-message
 		if freeplay["set_skip_intro"] then
@@ -15,7 +14,12 @@ script.on_init(function()
 		["selector-combinator"] = 5,
 		["medium-electric-pole"] = 10,
 	})
+end
 
+script.on_init(function()
+	if settings.startup["assembly-combinator-dev-mode"].value then
+		ac_dev_mode()
+	end
 	storage.assembly_combinators = {}
 end)
 
