@@ -89,8 +89,11 @@ function module:step()
 		else
 			self.flags.wait_cycles = nil
 		end
-	elseif instruction == "JMP" then
-		self.instruction_pointer = self.labels[args[1]]
+	elseif instruction == "JAL" then
+		if args[1] ~= "x0" then
+			self.registers[args[1]] = self.instruction_pointer
+		end
+		self.instruction_pointer = self.labels[args[2]]
 		self.flags.jump_executed = true
 	end
 

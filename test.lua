@@ -123,20 +123,20 @@ describe("CPU tests", function()
 		end
 	end)
 
-	it("can JMP", function()
+	it("can JAL, leaves x0 unchanged", function()
 		local test_code = {
 			"main:",
 			"    ADDI x10, x0, 10",
-			"    JMP loop3",
+			"    JAL x0, loop3",
 			"loop1:",
 			"    ADDI x10, x10, 1",
-			"    JMP exit",
+			"    JAL x0, exit",
 			"loop2:",
 			"    ADDI x10, x10, 1",
-			"    JMP loop1",
+			"    JAL x0, loop1",
 			"loop3:",
 			"    ADDI x10, x10, 1",
-			"    JMP loop2",
+			"    JAL x0, loop2",
 			"exit: HLT",
 		}
 		local myCpu = cpu.new(test_code)
@@ -146,7 +146,46 @@ describe("CPU tests", function()
 		end
 
 		local result = myCpu:get_register("x10")
+		local x0 = myCpu:get_register("x0")
+
 		assert.is_true(myCpu:is_halted())
 		assert.are.equal(result, 13)
+		assert.are.equal(x0, 0)
+	end)
+
+	it("can JAL, store return address in register", function()
+		local test_code = {
+			"main:",
+			"    ADDI x10, x0, 10",
+			"    JAL x1, loop3",
+			"loop1:",
+			"    ADDI x10, x10, 1",
+			"    JAL x2, exit",
+			"loop2:",
+			"    ADDI x10, x10, 1",
+			"    JAL x3, loop1",
+			"loop3:",
+			"    ADDI x10, x10, 1",
+			"    JAL x4, loop2",
+			"exit: HLT",
+		}
+		local myCpu = cpu.new(test_code)
+
+		while not myCpu:is_halted() do
+			myCpu:step()
+		end
+
+		local result = myCpu:get_register("x10")
+		local x1 = myCpu:get_register("x1")
+		local x2 = myCpu:get_register("x2")
+		local x3 = myCpu:get_register("x3")
+		local x4 = myCpu:get_register("x4")
+
+		assert.is_true(myCpu:is_halted())
+		assert.are.equal(result, 13)
+		assert.are.equal(x1, 3)
+		assert.are.equal(x2, 6)
+		assert.are.equal(x3, 9)
+		assert.are.equal(x4, 12)
 	end)
 end)
