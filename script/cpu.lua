@@ -40,7 +40,9 @@ function module.new(code)
 end
 
 function module:update_code(code)
-	self.memory = code or { "HLT" }
+	local memory = code or { "HLT" }
+	self.memory = memory
+	self.labels = module.parse_labels(memory)
 	self.instruction_pointer = 1
 	for i = 0, 31 do
 		self.registers["x" .. i] = 0
