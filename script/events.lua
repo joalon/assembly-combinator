@@ -47,15 +47,15 @@ script.on_event(defines.events.on_tick, function(_event)
 			data.cpu:step()
 
 			local output = data.cpu:get_register("output")
-			if output[2] > 0 then
+			if output > 0 then
 				local behavior = entity.get_control_behavior()
 
 				if behavior.sections_count == 0 then
 					behavior.add_section()
 				end
 				behavior.get_section(1).set_slot(1, {
-					value = { type = "item", name = output[1], quality = "normal" },
-					min = output[2],
+					value = { type = "item", name = "copper-plate", quality = "normal" },
+					min = output,
 				})
 			end
 		end
