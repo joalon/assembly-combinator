@@ -1,6 +1,23 @@
 local module = {}
 module.__index = module
 
+function module.parse_labels(code)
+	local label_pattern = "^%s*([%w_][%w_]*):.*$"
+	local labels = {}
+	for i, line in ipairs(code) do
+		if line:match(label_pattern) then
+			local label_name = module.extract_label_name(line)
+			labels[label_name] = i
+		end
+	end
+	return labels
+end
+
+function module.extract_label_name(line)
+	local label_name_pattern = "^%s*([%w_][%w_]*):.*$"
+	return line:match(label_name_pattern)
+end
+
 function module.new(code)
 	local cpuClass = setmetatable({}, module)
 
@@ -8,15 +25,16 @@ function module.new(code)
 		is_halted = false,
 		jump_executed = false,
 	}
-	cpuClass.registers = {
-		x1 = { nil, 0 },
-		x2 = { nil, 0 },
-		input = { nil, 0 },
-		output = { nil, 0 },
-	}
-	cpuClass.memory = code or { "HLT" }
+	cpuClass.registers = {}
+	for i = 0, 31 do
+		cpuClass.registers["x" .. i] = 0
+	end
+
+	local memory = code or { "HLT" }
+	cpuClass.memory = memory
 	cpuClass.instruction_pointer = 1
-	cpuClass.error = nil
+
+	cpuClass.labels = module.parse_labels(memory)
 
 	return cpuClass
 end
@@ -24,12 +42,9 @@ end
 function module:update_code(code)
 	self.memory = code or { "HLT" }
 	self.instruction_pointer = 1
-	self.registers = {
-		x1 = { nil, 0 },
-		x2 = { nil, 0 },
-		input = { nil, 0 },
-		output = { nil, 0 },
-	}
+	for i = 0, 31 do
+		self.registers["x" .. i] = 0
+	end
 	self.flags = {
 		is_halted = false,
 		jump_executed = false,
@@ -55,16 +70,29 @@ function module:step()
 	if instruction == "HLT" then
 		self.flags.is_halted = true
 		return
-	elseif instruction == "ADD" then
-		if #args == 2 then
-			local result = self.registers[args[1]][2] + tonumber(args[2])
-			self.registers[args[1]][2] = result
+	elseif instruction == "NOP" then
+	-- nop
+	elseif instruction == "ADDI" then
+		if #args == 3 then
+			self.registers[args[1]] = self.registers[args[2]] + tonumber(args[3])
 		end
-	elseif instruction == "MOV" then
-		self.registers[args[1]] = { "copper-plate", tonumber(args[2]) }
+		-- TODO: Check failure cases
+	elseif instruction == "WAIT" then
+		if self.flags["wait_cycles"] == nil then
+			self.flags["wait_cycles"] = tonumber(args[1]) - 1
+			return
+		elseif self.flags.wait_cycles > 1 then
+			self.flags.wait_cycles = self.flags.wait_cycles - 1
+			return
+		else
+			self.flags.wait_cycles = nil
+		end
 	end
 
-	self:advance_ip()
+	if not self.flags.jump_executed then
+		self:advance_ip()
+		self.flags.jump_executed = false
+	end
 end
 
 function module:advance_ip()
@@ -80,21 +108,6 @@ end
 
 function module:get_register(register_name)
 	return self.registers[register_name]
-end
-
-function module.parse_item(str)
-	local item, count = str:match("%[item=([^%]]+)%]%s*(%d+)")
-	if item and count then
-		return { item = item, count = tonumber(count) }
-	end
-
-	count, item = str:match("(%d+)%s*%[item=([^%]]+)%]")
-	if item and count then
-		return { item = item, count = tonumber(count) }
-	end
-
-	count = str:match("^%d+$")
-	return { item = "ac-generic-1", count = tonumber(count) }
 end
 
 return module

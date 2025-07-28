@@ -4,7 +4,13 @@ local cpu = require("script.cpu")
 
 describe("CPU tests", function()
 	it("can advance the instruction pointer", function()
-		local myCpu = cpu.new({ "ADD x1, 1", "ADD x1, 2", "ADD x1, 3" })
+		local code = {
+			"ADDI x10, x0, 1",
+			"ADDI x10, x10, 2",
+			"ADDI x10, x10, 3",
+		}
+		local myCpu = cpu.new(code)
+
 		assert.is_true(myCpu.instruction_pointer == 1)
 		myCpu:advance_ip()
 		myCpu:advance_ip()
@@ -14,61 +20,106 @@ describe("CPU tests", function()
 		myCpu:advance_ip()
 		assert.is_true(myCpu.instruction_pointer == 3)
 	end)
+
 	it("can halt", function()
 		local myCpu = cpu.new({ "HLT" })
 		myCpu:step()
 		assert.is_true(myCpu:is_halted())
+
+		myCpu = cpu.new()
+		myCpu:step()
+		assert.is_true(myCpu:is_halted())
 	end)
 
-	it("can execute untyped add and halt", function()
-		local myCpu = cpu.new({ "ADD x1, 2", "HLT" })
-		myCpu:step()
-		local amount = myCpu:get_register("x1")[2]
+	it("can wait", function()
+		local code = {
+			"WAIT 3",
+			"ADDI x10, x0, 13",
+			"HLT",
+		}
 
-		assert.is_true(amount == 2)
+		local myCpu = cpu.new(code)
+
+		for _ = 1, 3 do
+			myCpu:step()
+		end
+
+		local first_result = myCpu:get_register("x10")
+		myCpu:step()
+		local second_result = myCpu:get_register("x10")
+		myCpu:step()
+
+		assert.are.equal(first_result, 0)
+		assert.are.equal(second_result, 13)
+		assert.is_true(myCpu:is_halted())
+	end)
+
+	it("can execute an immediate add and halt", function()
+		local myCpu = cpu.new({ "ADDI x10, x0, 2", "HLT" })
+		myCpu:step()
+		local amount = myCpu:get_register("x10")
+
+		assert.are.equal(amount, 2)
 		assert.is_false(myCpu:is_halted())
 
 		myCpu:step()
 		assert.is_true(myCpu:is_halted())
 	end)
 
-	it("can execute multiple untyped adds and halt", function()
-		local myCpu = cpu.new({ "ADD x1, 1", "ADD x1, 2", "ADD x1, 3", "HLT" })
-		myCpu:step()
-		myCpu:step()
-		myCpu:step()
-		myCpu:step()
-		local amount = myCpu:get_register("x1")[2]
+	it("can execute multiple immediate adds and halt", function()
+		local code = {
+			"ADDI x10, x0, 1",
+			"ADDI x10, x10, 2",
+			"ADDI x10, x10, 3",
+			"HLT",
+		}
+		local myCpu = cpu.new(code)
 
-		assert.is_true(amount == 6)
+		for _ = 1, 4 do
+			myCpu:step()
+		end
+
+		local result = myCpu:get_register("x10")
+
+		assert.are.equal(6, result)
 		assert.is_true(myCpu:is_halted())
 	end)
-end)
 
-describe("Parsing tests", function()
-	it("can parse some items", function()
-		local input = "[item=copper-plate]15"
-		local result = cpu.parse_item(input)
+	it("can get label name from source code line", function()
+		local test_lines = {
+			{ input = "main:", expected = "main" },
+			{ input = "  loop:", expected = "loop" },
+			{ input = "    main:", expected = "main" },
+			{ input = "start_func:", expected = "start_func" },
+			{ input = "  inner_loop: NOP", expected = "inner_loop" },
+			{ input = "label1: ADD x1, x2", expected = "label1" },
+		}
 
-		assert.are.equal(result.item, "copper-plate")
-		assert.are.equal(result.count, 15)
+		for _, test in ipairs(test_lines) do
+			assert.are.equal(test.expected, cpu.extract_label_name(test.input))
+		end
+	end)
 
-		input = "17[item=copper-plate]"
-		result = cpu.parse_item(input)
+	it("can get labels with line number from source code", function()
+		local test_code = {
+			"main:",
+			"    ADDI x1, x0, 10",
+			"loop:",
+			"    ADDI x1, x1, -1",
+			"    BNE x1, x0, loop",
+			"    JAL x1, main",
+			"    inner: NOP",
+		}
+		local expected = {
+			main = 1,
+			loop = 3,
+			inner = 7,
+		}
 
-		assert.are.equal(result.item, "copper-plate")
-		assert.are.equal(result.count, 17)
-
-		input = "23 [item=iron-plate]"
-		result = cpu.parse_item(input)
-
-		assert.are.equal(result.item, "iron-plate")
-		assert.are.equal(result.count, 23)
-
-		input = "[item=iron-plate] 16"
-		result = cpu.parse_item(input)
-
-		assert.are.equal(result.item, "iron-plate")
-		assert.are.equal(result.count, 16)
+		local results = cpu.parse_labels(test_code)
+		assert.are.equal(#expected, #results)
+		for key, value in pairs(results) do
+			assert.are.equal(expected[key], value)
+		end
 	end)
 end)
