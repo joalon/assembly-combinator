@@ -75,10 +75,9 @@ function module:step()
 	elseif instruction == "NOP" then
 	-- nop
 	elseif instruction == "ADDI" then
-		if #args == 3 then
-			self.registers[args[1]] = self.registers[args[2]] + tonumber(args[3])
-		end
-		-- TODO: Check failure cases
+		self.registers[args[1]] = self.registers[args[2]] + tonumber(args[3])
+	elseif instruction == "SUB" then
+		self.registers[args[1]] = self.registers[args[2]] - self.registers[args[3]]
 	elseif instruction == "WAIT" then
 		if self.flags["wait_cycles"] == nil then
 			self.flags["wait_cycles"] = tonumber(args[1]) - 1

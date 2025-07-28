@@ -85,6 +85,26 @@ describe("CPU tests", function()
 		assert.is_true(myCpu:is_halted())
 	end)
 
+	it("can execute subtracts", function()
+		local code = {
+			"ADDI x10, x0, 0",
+			"ADDI x11, x0, 3",
+			"SUB x10, x10, x11",
+			"SUB x10, x10, x11",
+			"HLT",
+		}
+		local myCpu = cpu.new(code)
+
+		while not myCpu:is_halted() do
+			myCpu:step()
+		end
+
+		local result = myCpu:get_register("x10")
+
+		assert.are.equal(-6, result)
+		assert.is_true(myCpu:is_halted())
+	end)
+
 	it("can get label name from source code line", function()
 		local test_lines = {
 			{ input = "main:", expected = "main" },
