@@ -61,6 +61,8 @@ function module:step()
 	end
 
 	local fetch = self.memory[self.instruction_pointer]
+	fetch = fetch:gsub("^[^:]*:%s*", "") -- Remove label
+
 	local args = {}
 	for arg in string.gmatch(fetch, "[^%s,]+") do
 		table.insert(args, arg)
@@ -87,10 +89,14 @@ function module:step()
 		else
 			self.flags.wait_cycles = nil
 		end
+	elseif instruction == "JMP" then
+		self.instruction_pointer = self.labels[args[1]]
+		self.flags.jump_executed = true
 	end
 
 	if not self.flags.jump_executed then
 		self:advance_ip()
+	else
 		self.flags.jump_executed = false
 	end
 end

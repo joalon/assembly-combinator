@@ -122,4 +122,31 @@ describe("CPU tests", function()
 			assert.are.equal(expected[key], value)
 		end
 	end)
+
+	it("can JMP", function()
+		local test_code = {
+			"main:",
+			"    ADDI x10, x0, 10",
+			"    JMP loop3",
+			"loop1:",
+			"    ADDI x10, x10, 1",
+			"    JMP exit",
+			"loop2:",
+			"    ADDI x10, x10, 1",
+			"    JMP loop1",
+			"loop3:",
+			"    ADDI x10, x10, 1",
+			"    JMP loop2",
+			"exit: HLT",
+		}
+		local myCpu = cpu.new(test_code)
+
+		while not myCpu:is_halted() do
+			myCpu:step()
+		end
+
+		local result = myCpu:get_register("x10")
+		assert.is_true(myCpu:is_halted())
+		assert.are.equal(result, 13)
+	end)
 end)
