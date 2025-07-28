@@ -94,6 +94,11 @@ function module:step()
 		end
 		self.instruction_pointer = self.labels[args[2]]
 		self.flags.jump_executed = true
+	elseif instruction == "BEQ" then
+		if self.registers[args[1]] == self.registers[args[2]] then
+			self.instruction_pointer = self.labels[args[3]]
+			self.flags.jump_executed = true
+		end
 	end
 
 	if not self.flags.jump_executed then

@@ -208,4 +208,31 @@ describe("CPU tests", function()
 		assert.are.equal(x3, 9)
 		assert.are.equal(x4, 12)
 	end)
+
+	it("can BEQ (branch if equal)", function()
+		local test_code = {
+			"main:",
+			"    ADDI x10, x0, 9",
+			"    ADDI x11, x0, 9",
+			"    BEQ x10, x11, loop1",
+			"loop1:",
+			"    ADDI x12, x0, 13",
+			"    BEQ x10, x12, main",
+			"exit: HLT",
+		}
+		local myCpu = cpu.new(test_code)
+
+		while not myCpu:is_halted() do
+			myCpu:step()
+		end
+
+		local x10 = myCpu:get_register("x10")
+		local x11 = myCpu:get_register("x11")
+		local x12 = myCpu:get_register("x12")
+
+		assert.is_true(myCpu:is_halted())
+		assert.are.equal(x10, 9)
+		assert.are.equal(x11, 9)
+		assert.are.equal(x12, 13)
+	end)
 end)
