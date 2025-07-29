@@ -77,9 +77,13 @@ function module:step()
 	elseif instruction == "NOP" then
 	-- nop
 	elseif instruction == "ADDI" then
-		self.registers[args[1]] = self.registers[args[2]] + tonumber(args[3])
+		if args[1] ~= "x0" then
+			self.registers[args[1]] = self.registers[args[2]] + tonumber(args[3])
+		end
 	elseif instruction == "SUB" then
-		self.registers[args[1]] = self.registers[args[2]] - self.registers[args[3]]
+		if args[1] ~= "x0" then
+			self.registers[args[1]] = self.registers[args[2]] - self.registers[args[3]]
+		end
 	elseif instruction == "WAIT" then
 		if self.flags["wait_cycles"] == nil then
 			local register_pattern = "^x"
