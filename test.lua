@@ -80,6 +80,30 @@ describe("CPU tests", function()
 		assert.is_true(myCpu:is_halted())
 	end)
 
+	it("can write signal to output register", function()
+		local test_code = {
+			"main:",
+			"    ADDI x10, x0, 0",
+			"loop:",
+			"    ADDI x10, x10, 1",
+			"    WSIG o1, signal-A, x10",
+			"    ADDI x5, x0, 60",
+			"    WAIT x5",
+			"    SLTI x6, x10, 100",
+			"    BNE  x6, x0, loop",
+			"    JAL  x1, main",
+		}
+		local myCpu = cpu.new(test_code)
+
+		for _ = 1, 5 do
+			myCpu:step()
+		end
+
+		local result = myCpu:get_register("o1")
+		assert.are.equal("signal-A", result.name)
+		assert.are.equal(result.count, 1)
+	end)
+
 	it("can execute an immediate add and halt", function()
 		local myCpu = cpu.new({ "ADDI x10, x0, 2", "HLT" })
 		myCpu:step()

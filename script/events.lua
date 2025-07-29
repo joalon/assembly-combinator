@@ -46,17 +46,19 @@ script.on_event(defines.events.on_tick, function(_event)
 			data.last_process_tick = game.tick
 			data.cpu:step()
 
-			local output = data.cpu:get_register("output")
-			if output > 0 then
-				local behavior = entity.get_control_behavior()
+			for i = 0, 3 do
+				local output = data.cpu:get_register("o" .. i)
+				if output.count > 0 and output.name ~= nil then
+					local behavior = entity.get_control_behavior()
 
-				if behavior.sections_count == 0 then
-					behavior.add_section()
+					if behavior.sections_count == 0 then
+						behavior.add_section()
+					end
+					behavior.get_section(1).set_slot(1, {
+						value = { type = "item", name = output.name, quality = "normal" },
+						min = output.count,
+					})
 				end
-				behavior.get_section(1).set_slot(1, {
-					value = { type = "item", name = "copper-plate", quality = "normal" },
-					min = output,
-				})
 			end
 		end
 	end

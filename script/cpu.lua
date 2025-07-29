@@ -30,6 +30,9 @@ function module.new(code)
 	for i = 0, 31 do
 		cpuClass.registers["x" .. i] = 0
 	end
+	for i = 0, 3 do
+		cpuClass.registers["o" .. i] = { name = nil, count = 0 }
+	end
 
 	local memory = code or { "HLT" }
 	cpuClass.memory = memory
@@ -47,6 +50,9 @@ function module:update_code(code)
 	self.instruction_pointer = 1
 	for i = 0, 31 do
 		self.registers["x" .. i] = 0
+	end
+	for i = 0, 3 do
+		self.registers["o" .. i] = { name = nil, count = 0 }
 	end
 	self.flags = {
 		is_halted = false,
@@ -100,6 +106,11 @@ function module:step()
 			return
 		else
 			self.flags.wait_cycles = nil
+		end
+	elseif instruction == "WSIG" then
+		local output_register_pattern = "^o"
+		if args[1]:find(output_register_pattern) ~= nil then
+			self.registers[args[1]] = { name = args[2], count = self.registers[args[3]] }
 		end
 	elseif instruction == "JAL" then
 		if args[1] ~= "x0" then
