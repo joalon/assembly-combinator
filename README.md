@@ -15,9 +15,8 @@ main:
     ADDI x10, x0, 0             # Initialize counter to 0
 loop:
     ADDI x10, x10, 1            # Increment counter
-    WSIG green, signal-A, x10   # Output counter value
-    ADDI x5, x0, 60             # Load 60 (1 second)
-    WAIT x5                     # Wait 1 second
+    WSIG o1, copper-plate, x10   # Output counter value
+    WAIT 60                     # Wait 1 second (60 game ticks)
     SLTI x6, x10, 100           # Check if counter < 100
     BNE  x6, x0, loop           # Branch if not equal to zero
     JAL  x1, main               # Jump back to main
