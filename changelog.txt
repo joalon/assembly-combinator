@@ -1,4 +1,11 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.2.0
+Date: 29. 07. 2025
+  Major Features:
+    - Now supports: HLT, NOP, ADDI, SUB, SLT, SLTI, WAIT, WSIG, JAL, BEQ BNE
+    - Adds labels
+    - Adds o0 .. 03 as output registers which can be written to with WSIG
+---------------------------------------------------------------------------------------------------
 Version: 0.1.0
 Date: 27. 07. 2025
   Major Features:
