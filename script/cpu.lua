@@ -24,6 +24,7 @@ function module.new(code)
 	cpuClass.flags = {
 		is_halted = false,
 		jump_executed = false,
+		error = false,
 	}
 	cpuClass.registers = {}
 	for i = 0, 31 do
@@ -50,6 +51,7 @@ function module:update_code(code)
 	self.flags = {
 		is_halted = false,
 		jump_executed = false,
+		error = false,
 	}
 end
 
