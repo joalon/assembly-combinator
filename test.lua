@@ -320,19 +320,17 @@ describe("CPU tests", function()
 		assert.are.equal(x12, 13)
 	end)
 
-	it("can BNQ (branch not equal)", function()
+	it("can BNE (branch not equal)", function()
 		local test_code = {
 			"main:",
 			"    ADDI x10, x0, 9",
 			"    ADDI x11, x0, 9",
-			"    BNQ x10, x11, loop2",
+			"    BNE x10, x11, loop2",
 			"loop1:",
 			"    ADDI x12, x0, 13",
-			"    BNQ x10, x12, loop3",
+			"    BNE x10, x12, exit",
 			"loop2:",
 			"    ADDI x12, x12, 13",
-			"loop3:",
-			"    NOP",
 			"exit: HLT",
 		}
 		local myCpu = cpu.new(test_code)
