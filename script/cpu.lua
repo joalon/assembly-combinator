@@ -82,7 +82,12 @@ function module:step()
 		self.registers[args[1]] = self.registers[args[2]] - self.registers[args[3]]
 	elseif instruction == "WAIT" then
 		if self.flags["wait_cycles"] == nil then
-			self.flags["wait_cycles"] = tonumber(args[1]) - 1
+			local register_pattern = "^x"
+			if args[1]:find(register_pattern) ~= nil then
+				self.flags["wait_cycles"] = self.registers[args[1]] - 1
+			else
+				self.flags["wait_cycles"] = tonumber(args[1]) - 1
+			end
 			return
 		elseif self.flags.wait_cycles > 1 then
 			self.flags.wait_cycles = self.flags.wait_cycles - 1

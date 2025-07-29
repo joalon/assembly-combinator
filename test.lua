@@ -31,7 +31,7 @@ describe("CPU tests", function()
 		assert.is_true(myCpu:is_halted())
 	end)
 
-	it("can wait", function()
+	it("can wait on immediate value", function()
 		local code = {
 			"WAIT 3",
 			"ADDI x10, x0, 13",
@@ -49,6 +49,32 @@ describe("CPU tests", function()
 		local second_result = myCpu:get_register("x10")
 		myCpu:step()
 
+		assert.are.equal(first_result, 0)
+		assert.are.equal(second_result, 13)
+		assert.is_true(myCpu:is_halted())
+	end)
+
+	it("can wait on register", function()
+		local code = {
+			"ADDI x10, x0, 3",
+			"WAIT x10",
+			"ADDI x11, x0, 13",
+			"HLT",
+		}
+
+		local myCpu = cpu.new(code)
+
+		for _ = 1, 4 do
+			myCpu:step()
+		end
+
+		local x10 = myCpu:get_register("x10")
+		local first_result = myCpu:get_register("x11")
+		myCpu:step()
+		local second_result = myCpu:get_register("x11")
+		myCpu:step()
+
+		assert.are.equal(x10, 3)
 		assert.are.equal(first_result, 0)
 		assert.are.equal(second_result, 13)
 		assert.is_true(myCpu:is_halted())
