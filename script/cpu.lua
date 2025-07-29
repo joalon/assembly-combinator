@@ -92,6 +92,18 @@ function module:step()
 		if args[1] ~= "x0" then
 			self.registers[args[1]] = self.registers[args[2]] - self.registers[args[3]]
 		end
+	elseif instruction == "SLT" then
+		if self.registers[args[2]] < self.registers[args[3]] then
+			self.registers[args[1]] = 1
+		else
+			self.registers[args[1]] = 0
+		end
+	elseif instruction == "SLTI" then
+		if self.registers[args[2]] < tonumber(args[3]) then
+			self.registers[args[1]] = 1
+		else
+			self.registers[args[1]] = 0
+		end
 	elseif instruction == "WAIT" then
 		if self.flags["wait_cycles"] == nil then
 			local register_pattern = "^x"
