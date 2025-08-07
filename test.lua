@@ -3,349 +3,384 @@ require("busted.runner")()
 local cpu = require("script.cpu")
 
 describe("CPU tests", function()
-	it("can advance the instruction pointer", function()
-		local code = {
-			"ADDI x10, x0, 1",
-			"ADDI x10, x10, 2",
-			"ADDI x10, x10, 3",
-		}
-		local myCpu = cpu.new(code)
+    it("can advance the instruction pointer", function()
+        local code = {
+            "ADDI x10, x0, 1",
+            "ADDI x10, x10, 2",
+            "ADDI x10, x10, 3",
+        }
+        local myCpu = cpu.new(code)
 
-		assert.is_true(myCpu.instruction_pointer == 1)
-		myCpu:advance_ip()
-		myCpu:advance_ip()
-		myCpu:advance_ip()
-		myCpu:advance_ip()
-		assert.is_true(myCpu.instruction_pointer == 2)
-		myCpu:advance_ip()
-		assert.is_true(myCpu.instruction_pointer == 3)
-	end)
+        assert.is_true(myCpu.instruction_pointer == 1)
+        myCpu:advance_ip()
+        myCpu:advance_ip()
+        myCpu:advance_ip()
+        myCpu:advance_ip()
+        assert.is_true(myCpu.instruction_pointer == 2)
+        myCpu:advance_ip()
+        assert.is_true(myCpu.instruction_pointer == 3)
+    end)
 
-	it("can halt", function()
-		local myCpu = cpu.new({ "HLT" })
-		myCpu:step()
-		assert.is_true(myCpu:is_halted())
+    it("can halt", function()
+        local myCpu = cpu.new({ "HLT" })
+        myCpu:step()
+        assert.is_true(myCpu:is_halted())
 
-		myCpu = cpu.new()
-		myCpu:step()
-		assert.is_true(myCpu:is_halted())
-	end)
+        myCpu = cpu.new()
+        myCpu:step()
+        assert.is_true(myCpu:is_halted())
+    end)
 
-	it("can wait on immediate value", function()
-		local code = {
-			"WAIT 3",
-			"ADDI x10, x0, 13",
-			"HLT",
-		}
+    it("can wait on immediate value", function()
+        local code = {
+            "WAIT 3",
+            "ADDI x10, x0, 13",
+            "HLT",
+        }
 
-		local myCpu = cpu.new(code)
+        local myCpu = cpu.new(code)
 
-		for _ = 1, 3 do
-			myCpu:step()
-		end
+        for _ = 1, 3 do
+            myCpu:step()
+        end
 
-		local first_result = myCpu:get_register("x10")
-		myCpu:step()
-		local second_result = myCpu:get_register("x10")
-		myCpu:step()
+        local first_result = myCpu:get_register("x10")
+        myCpu:step()
+        local second_result = myCpu:get_register("x10")
+        myCpu:step()
 
-		assert.are.equal(first_result, 0)
-		assert.are.equal(second_result, 13)
-		assert.is_true(myCpu:is_halted())
-	end)
+        assert.are.equal(first_result, 0)
+        assert.are.equal(second_result, 13)
+        assert.is_true(myCpu:is_halted())
+    end)
 
-	it("can wait on register", function()
-		local code = {
-			"ADDI x10, x0, 3",
-			"WAIT x10",
-			"ADDI x11, x0, 13",
-			"HLT",
-		}
+    it("can wait on register", function()
+        local code = {
+            "ADDI x10, x0, 3",
+            "WAIT x10",
+            "ADDI x11, x0, 13",
+            "HLT",
+        }
 
-		local myCpu = cpu.new(code)
+        local myCpu = cpu.new(code)
 
-		for _ = 1, 4 do
-			myCpu:step()
-		end
+        for _ = 1, 4 do
+            myCpu:step()
+        end
 
-		local x10 = myCpu:get_register("x10")
-		local first_result = myCpu:get_register("x11")
-		myCpu:step()
-		local second_result = myCpu:get_register("x11")
-		myCpu:step()
+        local x10 = myCpu:get_register("x10")
+        local first_result = myCpu:get_register("x11")
+        myCpu:step()
+        local second_result = myCpu:get_register("x11")
+        myCpu:step()
 
-		assert.are.equal(x10, 3)
-		assert.are.equal(first_result, 0)
-		assert.are.equal(second_result, 13)
-		assert.is_true(myCpu:is_halted())
-	end)
+        assert.are.equal(x10, 3)
+        assert.are.equal(first_result, 0)
+        assert.are.equal(second_result, 13)
+        assert.is_true(myCpu:is_halted())
+    end)
 
-	it("can write signal to output register", function()
-		local test_code = {
-			"main:",
-			"    ADDI x10, x0, 0",
-			"loop:",
-			"    ADDI x10, x10, 1",
-			"    WSIG o1, signal-A, x10",
-			"    ADDI x5, x0, 60",
-			"    WAIT x5",
-			"    SLTI x6, x10, 100",
-			"    BNE  x6, x0, loop",
-			"    JAL  x1, main",
-		}
-		local myCpu = cpu.new(test_code)
+    it("can write signal to output register", function()
+        local test_code = {
+            "main:",
+            "    ADDI x10, x0, 0",
+            "loop:",
+            "    ADDI x10, x10, 1",
+            "    WSIG o1, signal-A, x10",
+            "    ADDI x5, x0, 60",
+            "    WAIT x5",
+            "    SLTI x6, x10, 100",
+            "    BNE  x6, x0, loop",
+            "    JAL  x1, main",
+        }
+        local myCpu = cpu.new(test_code)
 
-		for _ = 1, 5 do
-			myCpu:step()
-		end
+        for _ = 1, 5 do
+            myCpu:step()
+        end
 
-		local result = myCpu:get_register("o1")
-		assert.are.equal("signal-A", result.name)
-		assert.are.equal(result.count, 1)
-	end)
+        local result = myCpu:get_register("o1")
+        assert.are.equal("signal-A", result.name)
+        assert.are.equal(result.count, 1)
+    end)
 
-	it("can execute an immediate add and halt", function()
-		local myCpu = cpu.new({ "ADDI x10, x0, 2", "HLT" })
-		myCpu:step()
-		local amount = myCpu:get_register("x10")
+    it("can execute an immediate add and halt", function()
+        local myCpu = cpu.new({ "ADDI x10, x0, 2", "HLT" })
+        myCpu:step()
+        local amount = myCpu:get_register("x10")
 
-		assert.are.equal(amount, 2)
-		assert.is_false(myCpu:is_halted())
+        assert.are.equal(amount, 2)
+        assert.is_false(myCpu:is_halted())
 
-		myCpu:step()
-		assert.is_true(myCpu:is_halted())
-	end)
+        myCpu:step()
+        assert.is_true(myCpu:is_halted())
+    end)
 
-	it("can execute multiple immediate adds and halt", function()
-		local code = {
-			"ADDI x10, x0, 1",
-			"ADDI x10, x10, 2",
-			"ADDI x10, x10, 3",
-			"HLT",
-		}
-		local myCpu = cpu.new(code)
+    it("can execute multiple immediate adds and halt", function()
+        local code = {
+            "ADDI x10, x0, 1",
+            "ADDI x10, x10, 2",
+            "ADDI x10, x10, 3",
+            "HLT",
+        }
+        local myCpu = cpu.new(code)
 
-		for _ = 1, 4 do
-			myCpu:step()
-		end
+        for _ = 1, 4 do
+            myCpu:step()
+        end
 
-		local result = myCpu:get_register("x10")
+        local result = myCpu:get_register("x10")
 
-		assert.are.equal(6, result)
-		assert.is_true(myCpu:is_halted())
-	end)
+        assert.are.equal(6, result)
+        assert.is_true(myCpu:is_halted())
+    end)
 
-	it("can execute SLT (set if less than)", function()
-		local code = {
-			"ADDI x10, x0, 10",
-			"ADDI x11, x0, 11",
-			"SLT x12, x10, x11",
-			"HLT",
-		}
-		local myCpu = cpu.new(code)
+    it("can execute SLT (set if less than)", function()
+        local code = {
+            "ADDI x10, x0, 10",
+            "ADDI x11, x0, 11",
+            "SLT x12, x10, x11",
+            "HLT",
+        }
+        local myCpu = cpu.new(code)
 
-		while not myCpu:is_halted() do
-			myCpu:step()
-		end
+        while not myCpu:is_halted() do
+            myCpu:step()
+        end
 
-		local result = myCpu:get_register("x12")
-		assert.are.equal(1, result)
-	end)
+        local result = myCpu:get_register("x12")
+        assert.are.equal(1, result)
+    end)
 
-	it("can execute SLTI (set if less than immediate value)", function()
-		local code = {
-			"ADDI x10, x0, 10",
-			"ADDI x11, x0, 11",
-			"SLTI x12, x10, 11",
-			"HLT",
-		}
-		local myCpu = cpu.new(code)
+    it("can execute SLTI (set if less than immediate value)", function()
+        local code = {
+            "ADDI x10, x0, 10",
+            "ADDI x11, x0, 11",
+            "SLTI x12, x10, 11",
+            "HLT",
+        }
+        local myCpu = cpu.new(code)
 
-		while not myCpu:is_halted() do
-			myCpu:step()
-		end
+        while not myCpu:is_halted() do
+            myCpu:step()
+        end
 
-		local result = myCpu:get_register("x12")
-		assert.are.equal(1, result)
-	end)
+        local result = myCpu:get_register("x12")
+        assert.are.equal(1, result)
+    end)
 
-	it("can execute subtracts", function()
-		local code = {
-			"ADDI x10, x0, 0",
-			"ADDI x11, x0, 3",
-			"SUB x10, x10, x11",
-			"SUB x10, x10, x11",
-			"HLT",
-		}
-		local myCpu = cpu.new(code)
+    it("can execute subtracts", function()
+        local code = {
+            "ADDI x10, x0, 0",
+            "ADDI x11, x0, 3",
+            "SUB x10, x10, x11",
+            "SUB x10, x10, x11",
+            "HLT",
+        }
+        local myCpu = cpu.new(code)
 
-		while not myCpu:is_halted() do
-			myCpu:step()
-		end
+        while not myCpu:is_halted() do
+            myCpu:step()
+        end
 
-		local result = myCpu:get_register("x10")
+        local result = myCpu:get_register("x10")
 
-		assert.are.equal(-6, result)
-		assert.is_true(myCpu:is_halted())
-	end)
+        assert.are.equal(-6, result)
+        assert.is_true(myCpu:is_halted())
+    end)
 
-	it("can get label name from source code line", function()
-		local test_lines = {
-			{ input = "main:", expected = "main" },
-			{ input = "  loop:", expected = "loop" },
-			{ input = "    main:", expected = "main" },
-			{ input = "start_func:", expected = "start_func" },
-			{ input = "  inner_loop: NOP", expected = "inner_loop" },
-			{ input = "label1: ADD x1, x2", expected = "label1" },
-		}
+    it("can get label name from source code line", function()
+        local test_lines = {
+            { input = "main:",              expected = "main" },
+            { input = "  loop:",            expected = "loop" },
+            { input = "    main:",          expected = "main" },
+            { input = "start_func:",        expected = "start_func" },
+            { input = "  inner_loop: NOP",  expected = "inner_loop" },
+            { input = "label1: ADD x1, x2", expected = "label1" },
+        }
 
-		for _, test in ipairs(test_lines) do
-			assert.are.equal(test.expected, cpu.extract_label_name(test.input))
-		end
-	end)
+        for _, test in ipairs(test_lines) do
+            assert.are.equal(test.expected, cpu.extract_label_name(test.input))
+        end
+    end)
 
-	it("can get labels with line number from source code", function()
-		local test_code = {
-			"main:",
-			"    ADDI x1, x0, 10",
-			"loop:",
-			"    ADDI x1, x1, -1",
-			"    BNE x1, x0, loop",
-			"    JAL x1, main",
-			"    inner: NOP",
-		}
-		local expected = {
-			main = 1,
-			loop = 3,
-			inner = 7,
-		}
+    it("can get labels with line number from source code", function()
+        local test_code = {
+            "main:",
+            "    ADDI x1, x0, 10",
+            "loop:",
+            "    ADDI x1, x1, -1",
+            "    BNE x1, x0, loop",
+            "    JAL x1, main",
+            "    inner: NOP",
+        }
+        local expected = {
+            main = 1,
+            loop = 3,
+            inner = 7,
+        }
 
-		local results = cpu.parse_labels(test_code)
-		assert.are.equal(#expected, #results)
-		for key, value in pairs(results) do
-			assert.are.equal(expected[key], value)
-		end
-	end)
+        local results = cpu.parse_labels(test_code)
+        assert.are.equal(#expected, #results)
+        for key, value in pairs(results) do
+            assert.are.equal(expected[key], value)
+        end
+    end)
 
-	it("can JAL, leaves x0 unchanged", function()
-		local test_code = {
-			"main:",
-			"    ADDI x10, x0, 10",
-			"    JAL x0, loop3",
-			"loop1:",
-			"    ADDI x10, x10, 1",
-			"    JAL x0, exit",
-			"loop2:",
-			"    ADDI x10, x10, 1",
-			"    JAL x0, loop1",
-			"loop3:",
-			"    ADDI x10, x10, 1",
-			"    JAL x0, loop2",
-			"exit: HLT",
-		}
-		local myCpu = cpu.new(test_code)
+    it("can JAL, leaves x0 unchanged", function()
+        local test_code = {
+            "main:",
+            "    ADDI x10, x0, 10",
+            "    JAL x0, loop3",
+            "loop1:",
+            "    ADDI x10, x10, 1",
+            "    JAL x0, exit",
+            "loop2:",
+            "    ADDI x10, x10, 1",
+            "    JAL x0, loop1",
+            "loop3:",
+            "    ADDI x10, x10, 1",
+            "    JAL x0, loop2",
+            "exit: HLT",
+        }
+        local myCpu = cpu.new(test_code)
 
-		while not myCpu:is_halted() do
-			myCpu:step()
-		end
+        while not myCpu:is_halted() do
+            myCpu:step()
+        end
 
-		local result = myCpu:get_register("x10")
-		local x0 = myCpu:get_register("x0")
+        local result = myCpu:get_register("x10")
+        local x0 = myCpu:get_register("x0")
 
-		assert.is_true(myCpu:is_halted())
-		assert.are.equal(result, 13)
-		assert.are.equal(x0, 0)
-	end)
+        assert.is_true(myCpu:is_halted())
+        assert.are.equal(result, 13)
+        assert.are.equal(x0, 0)
+    end)
 
-	it("can JAL, store return address in register", function()
-		local test_code = {
-			"main:",
-			"    ADDI x10, x0, 10",
-			"    JAL x1, loop3",
-			"loop1:",
-			"    ADDI x10, x10, 1",
-			"    JAL x2, exit",
-			"loop2:",
-			"    ADDI x10, x10, 1",
-			"    JAL x3, loop1",
-			"loop3:",
-			"    ADDI x10, x10, 1",
-			"    JAL x4, loop2",
-			"exit: HLT",
-		}
-		local myCpu = cpu.new(test_code)
+    it("can JAL, store return address in register", function()
+        local test_code = {
+            "main:",
+            "    ADDI x10, x0, 10",
+            "    JAL x1, loop3",
+            "loop1:",
+            "    ADDI x10, x10, 1",
+            "    JAL x2, exit",
+            "loop2:",
+            "    ADDI x10, x10, 1",
+            "    JAL x3, loop1",
+            "loop3:",
+            "    ADDI x10, x10, 1",
+            "    JAL x4, loop2",
+            "exit: HLT",
+        }
+        local myCpu = cpu.new(test_code)
 
-		while not myCpu:is_halted() do
-			myCpu:step()
-		end
+        while not myCpu:is_halted() do
+            myCpu:step()
+        end
 
-		local result = myCpu:get_register("x10")
-		local x1 = myCpu:get_register("x1")
-		local x2 = myCpu:get_register("x2")
-		local x3 = myCpu:get_register("x3")
-		local x4 = myCpu:get_register("x4")
+        local result = myCpu:get_register("x10")
+        local x1 = myCpu:get_register("x1")
+        local x2 = myCpu:get_register("x2")
+        local x3 = myCpu:get_register("x3")
+        local x4 = myCpu:get_register("x4")
 
-		assert.is_true(myCpu:is_halted())
-		assert.are.equal(result, 13)
-		assert.are.equal(x1, 3)
-		assert.are.equal(x2, 6)
-		assert.are.equal(x3, 9)
-		assert.are.equal(x4, 12)
-	end)
+        assert.is_true(myCpu:is_halted())
+        assert.are.equal(result, 13)
+        assert.are.equal(x1, 3)
+        assert.are.equal(x2, 6)
+        assert.are.equal(x3, 9)
+        assert.are.equal(x4, 12)
+    end)
 
-	it("can BEQ (branch if equal)", function()
-		local test_code = {
-			"main:",
-			"    ADDI x10, x0, 9",
-			"    ADDI x11, x0, 9",
-			"    BEQ x10, x11, loop1",
-			"loop1:",
-			"    ADDI x12, x0, 13",
-			"    BEQ x10, x12, main",
-			"exit: HLT",
-		}
-		local myCpu = cpu.new(test_code)
+    it("can BEQ (branch if equal)", function()
+        local test_code = {
+            "main:",
+            "    ADDI x10, x0, 9",
+            "    ADDI x11, x0, 9",
+            "    BEQ x10, x11, loop1",
+            "loop1:",
+            "    ADDI x12, x0, 13",
+            "    BEQ x10, x12, main",
+            "exit: HLT",
+        }
+        local myCpu = cpu.new(test_code)
 
-		while not myCpu:is_halted() do
-			myCpu:step()
-		end
+        while not myCpu:is_halted() do
+            myCpu:step()
+        end
 
-		local x10 = myCpu:get_register("x10")
-		local x11 = myCpu:get_register("x11")
-		local x12 = myCpu:get_register("x12")
+        local x10 = myCpu:get_register("x10")
+        local x11 = myCpu:get_register("x11")
+        local x12 = myCpu:get_register("x12")
 
-		assert.is_true(myCpu:is_halted())
-		assert.are.equal(x10, 9)
-		assert.are.equal(x11, 9)
-		assert.are.equal(x12, 13)
-	end)
+        assert.is_true(myCpu:is_halted())
+        assert.are.equal(x10, 9)
+        assert.are.equal(x11, 9)
+        assert.are.equal(x12, 13)
+    end)
 
-	it("can BNE (branch not equal)", function()
-		local test_code = {
-			"main:",
-			"    ADDI x10, x0, 9",
-			"    ADDI x11, x0, 9",
-			"    BNE x10, x11, loop2",
-			"loop1:",
-			"    ADDI x12, x0, 13",
-			"    BNE x10, x12, exit",
-			"loop2:",
-			"    ADDI x12, x12, 13",
-			"exit: HLT",
-		}
-		local myCpu = cpu.new(test_code)
+    it("can BNE (branch not equal)", function()
+        local test_code = {
+            "main:",
+            "    ADDI x10, x0, 9",
+            "    ADDI x11, x0, 9",
+            "    BNE x10, x11, loop2",
+            "loop1:",
+            "    ADDI x12, x0, 13",
+            "    BNE x10, x12, exit",
+            "loop2:",
+            "    ADDI x12, x12, 13",
+            "exit: HLT",
+        }
+        local myCpu = cpu.new(test_code)
 
-		while not myCpu:is_halted() do
-			myCpu:step()
-		end
+        while not myCpu:is_halted() do
+            myCpu:step()
+        end
 
-		local x10 = myCpu:get_register("x10")
-		local x11 = myCpu:get_register("x11")
-		local x12 = myCpu:get_register("x12")
+        local x10 = myCpu:get_register("x10")
+        local x11 = myCpu:get_register("x11")
+        local x12 = myCpu:get_register("x12")
 
-		assert.is_true(myCpu:is_halted())
-		assert.are.equal(x10, 9)
-		assert.are.equal(x11, 9)
-		assert.are.equal(x12, 13)
-	end)
+        assert.is_true(myCpu:is_halted())
+        assert.are.equal(x10, 9)
+        assert.are.equal(x11, 9)
+        assert.are.equal(x12, 13)
+    end)
+
+    it("can report a runtime error", function()
+        local test_code = { "ASDF x0, x0, 1" }
+
+        local myCpu = cpu.new(test_code)
+        myCpu:step()
+
+        local errors = myCpu:get_errors()
+        assert.are.equal(1, #errors)
+
+        local error = errors[1]
+        local contains_invalid_instruction = nil ~= string.match(error, "ASDF")
+        assert.is_true(contains_invalid_instruction)
+    end)
+
+    it("can't step further after runtime error", function()
+        local test_code = {
+            "ASDF x0, x0, 1",
+            "ADDI x1, x0, 13",
+            "HLT"
+        }
+
+        local myCpu = cpu.new(test_code)
+        myCpu:step()
+        myCpu:step()
+
+        local errors = myCpu:get_errors()
+        assert.are.equal(1, #errors)
+
+        local error = errors[1]
+        local contains_invalid_instruction = nil ~= string.match(error, "ASDF")
+        assert.is_true(contains_invalid_instruction)
+
+        assert.are.equal(1, myCpu.instruction_pointer)
+    end)
 end)
