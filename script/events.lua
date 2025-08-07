@@ -7,18 +7,6 @@ script.on_event(defines.events.on_built_entity, function(event)
             cpu = cpu.new(),
             last_process_tick = game.tick,
         }
-
-        local behavior = event.entity.get_control_behavior()
-
-        if behavior.sections_count == 0 then
-            behavior.add_section()
-        end
-        behavior.get_section(1).set_slot(1, {
-            value = { type = "item", name = "copper-plate", quality = "normal" },
-            count = 1337,
-            min = 1,
-            max = 2,
-        })
     end
 end)
 
