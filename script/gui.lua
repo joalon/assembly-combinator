@@ -104,6 +104,16 @@ script.on_event(defines.events.on_gui_click, function(event)
             table.insert(updated_code, line)
         end
         storage.assembly_combinators[unit_number].cpu:update_code(updated_code)
+
+        -- reset errors label in GUI
+        for _, player in pairs(game.players) do
+            local gui_name = "assembly_combinator_gui_" .. unit_number
+            local gui = player.gui.screen[gui_name]
+            if gui and gui.content and gui.content.errors then
+                gui.content.errors.caption = ""
+            end
+        end
+        -- reset errors
     end
 end)
 

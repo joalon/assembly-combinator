@@ -44,15 +44,6 @@ script.on_event(defines.events.on_tick, function(event)
                     end
                 end
                 return
-            else
-                -- Clear errors when there are none
-                for _, player in pairs(game.players) do
-                    local gui_name = "assembly_combinator_gui_" .. data.entity.unit_number
-                    local gui = player.gui.screen[gui_name]
-                    if gui and gui.content and gui.content.errors then
-                        gui.content.errors.caption = ""
-                    end
-                end
             end
 
             -- Handle outputs
