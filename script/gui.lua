@@ -11,7 +11,8 @@ end)
 function create_custom_gui(player, entity)
     local gui_name = "assembly_combinator_gui_" .. entity.unit_number
     if player.gui.screen[gui_name] then
-        player.gui.screen.gui_name.bring_to_front()
+        -- following code crashes with "gui_name is nil" error
+        -- player.gui.screen.gui_name.bring_to_front()
         return
     end
 
@@ -51,11 +52,72 @@ function create_custom_gui(player, entity)
         type = "frame",
         name = "content",
         direction = "vertical",
-        style = "inside_deep_frame",
+        style = "entity_frame",
     })
-    content.style.padding = 12
+    content.style.horizontally_stretchable = true
+
+    local connected = content.add({
+        type = "frame",
+        name = "connected",
+        direction = "horizontal",
+        style = "subheader_frame",
+    })
+    connected.style.horizontally_stretchable = true
+    connected.style.horizontally_squashable = true
+    connected.style.top_margin = -8
+    connected.style.left_margin = -12
+    connected.style.right_margin = -12
+
+    local green_network = entity.get_circuit_network(defines.wire_type.green)
+    local red_network = entity.get_circuit_network(defines.wire_type.red)
+
+    local connected_label_caption = ""
+    if green_network or red_network then
+        connected_label_caption = "Connected to circuit network"
+    else
+        connected_label_caption = "Not connected"
+    end
+
+    connected.add({
+        type = "label",
+        name = "connected_label",
+        caption = connected_label_caption,
+        style = "subheader_label",
+    })
+
+    local working = content.add({
+        type = "flow",
+        name = "working",
+        direction = "horizontal",
+    })
+    working.style.vertical_align = "center"
 
     local cpu = storage.assembly_combinators[entity.unit_number].cpu
+
+    local working_sprite = "utility/"
+    local working_label = ""
+    if cpu:is_halted() then
+        working_sprite = working_sprite .. "status_not_working"
+        working_label = working_label .. "Halted"
+    elseif #cpu:get_errors() ~= 0 then
+        working_sprite = working_sprite .. "status_yellow"
+        working_label = working_label .. "Error"
+    else
+        working_sprite = working_sprite .. "status_working"
+        working_label = working_label .. "Working"
+    end
+    working.add {
+        type = "sprite",
+        name = "working_icon",
+        sprite = working_sprite,
+        style = "status_image"
+    }
+    local working_label = working.add({
+        type = "label",
+        name = "working_label",
+        caption = working_label
+    })
+
     local code = ""
     for i, line in ipairs(cpu:get_code()) do
         if i == 1 then
@@ -65,16 +127,21 @@ function create_custom_gui(player, entity)
         end
     end
 
-    content.add({
+    local textbox = content.add({
         type = "text-box",
         name = "combinator_memory",
         text = code,
     })
+    textbox.style.size = { 300, 300 }
 
     content.add({
         type = "button",
         name = "assembly-combinator-save-button",
         caption = "Save",
+    })
+
+    content.add({
+        type = "line"
     })
 
     local errors = cpu:get_errors()
@@ -113,7 +180,6 @@ script.on_event(defines.events.on_gui_click, function(event)
                 gui.content.errors.caption = ""
             end
         end
-        -- reset errors
     end
 end)
 

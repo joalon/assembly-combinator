@@ -78,7 +78,8 @@ function module:step()
     end
 
     local fetch = self.memory[self.instruction_pointer]
-    fetch = fetch:gsub("^[^:]*:%s*", "") -- Remove label
+    fetch = fetch:gsub("^[^:]*:%s*", "")           -- Remove label on current instruction
+    fetch = fetch:gsub("#.*", ""):gsub("%s+$", "") -- Remove comments "#" and trailing whitespace
 
     local args = {}
     for arg in string.gmatch(fetch, "[^%s,]+") do
@@ -92,57 +93,114 @@ function module:step()
     elseif instruction == "NOP" then
         -- nop
     elseif instruction == "ADDI" then
+        if #args ~= 3 then
+            self.status.error = true
+            table.insert(self.errors,
+                "[ADDI:" ..
+                self.instruction_pointer .. "] " .. "Unexpected number of arguments. ADDI expects 3, received " .. #args)
+            return
+        end
         if args[1] ~= "x0" then
             self.registers[args[1]] = self.registers[args[2]] + tonumber(args[3])
         end
     elseif instruction == "SUB" then
+        if #args ~= 3 then
+            self.status.error = true
+            table.insert(self.errors,
+                "[SUB:" ..
+                self.instruction_pointer .. "] " .. "Unexpected number of arguments. Expected 3, got " .. #args)
+            return
+        end
         if args[1] ~= "x0" then
             self.registers[args[1]] = self.registers[args[2]] - self.registers[args[3]]
         end
     elseif instruction == "SLT" then
+        if #args ~= 3 then
+            self.status.error = true
+            table.insert(self.errors,
+                "[SLT:" ..
+                self.instruction_pointer .. "] " .. "Unexpected number of arguments. Expected 3, got " .. #args)
+            return
+        end
         if self.registers[args[2]] < self.registers[args[3]] then
             self.registers[args[1]] = 1
         else
             self.registers[args[1]] = 0
         end
     elseif instruction == "SLTI" then
+        if #args ~= 3 then
+            self.status.error = true
+            table.insert(self.errors,
+                "[SLTI:" ..
+                self.instruction_pointer .. "] " .. "Unexpected number of arguments. Expected 3, got " .. #args)
+            return
+        end
         if self.registers[args[2]] < tonumber(args[3]) then
             self.registers[args[1]] = 1
         else
             self.registers[args[1]] = 0
         end
     elseif instruction == "WAIT" then
-        if self.status["wait_cycles"] == nil then
-            local register_pattern = "^x"
-            if args[1]:find(register_pattern) ~= nil then
-                self.status["wait_cycles"] = self.registers[args[1]] - 1
+        if #args > 0 then
+            if self.status["wait_cycles"] == nil then
+                local register_pattern = "^x"
+                if args[1]:find(register_pattern) ~= nil then
+                    self.status["wait_cycles"] = self.registers[args[1]] - 1
+                else
+                    self.status["wait_cycles"] = tonumber(args[1]) - 1
+                end
+                return
+            elseif self.status.wait_cycles > 1 then
+                self.status.wait_cycles = self.status.wait_cycles - 1
+                return
             else
-                self.status["wait_cycles"] = tonumber(args[1]) - 1
+                self.status.wait_cycles = nil
             end
-            return
-        elseif self.status.wait_cycles > 1 then
-            self.status.wait_cycles = self.status.wait_cycles - 1
-            return
-        else
-            self.status.wait_cycles = nil
         end
     elseif instruction == "WSIG" then
         local output_register_pattern = "^o"
         if args[1]:find(output_register_pattern) ~= nil then
             self.registers[args[1]] = { name = args[2], count = self.registers[args[3]] }
+        else
+            self.status.error = true
+            table.insert(self.errors,
+                "[WSIG:" ..
+                self.instruction_pointer .. "] " .. "Unexpected output register name. Expected o0-o3, got " .. args[1])
+            return
         end
     elseif instruction == "JAL" then
+        if #args ~= 2 then
+            self.status.error = true
+            table.insert(self.errors,
+                "[JAL:" ..
+                self.instruction_pointer .. "] " .. "Unexpected number of arguments, expected 2, got " .. #args)
+            return
+        end
         if args[1] ~= "x0" then
             self.registers[args[1]] = self.instruction_pointer
         end
         self.instruction_pointer = self.labels[args[2]]
         self.status.jump_executed = true
     elseif instruction == "BEQ" then
+        if #args ~= 3 then
+            self.status.error = true
+            table.insert(self.errors,
+                "[BEQ:" ..
+                self.instruction_pointer .. "] " .. "Unexpected number of arguments, expected 3, got " .. #args)
+            return
+        end
         if self.registers[args[1]] == self.registers[args[2]] then
             self.instruction_pointer = self.labels[args[3]]
             self.status.jump_executed = true
         end
     elseif instruction == "BNE" then
+        if #args ~= 3 then
+            self.status.error = true
+            table.insert(self.errors,
+                "[BNE:" ..
+                self.instruction_pointer .. "] " .. "Unexpected number of arguments, expected 3, got " .. #args)
+            return
+        end
         if self.registers[args[1]] ~= self.registers[args[2]] then
             self.instruction_pointer = self.labels[args[3]]
             self.status.jump_executed = true
@@ -150,7 +208,7 @@ function module:step()
     else
         if instruction ~= nil then
             table.insert(self.errors, "Unexpected instruction on line " .. self.instruction_pointer .. ": " ..
-            instruction)
+                instruction)
             self.status.error = true
             return
         end

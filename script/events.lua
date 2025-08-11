@@ -46,6 +46,50 @@ script.on_event(defines.events.on_tick, function(event)
                 return
             end
 
+            -- Update GUI icons
+            for _, player in pairs(game.players) do
+                local gui_name = "assembly_combinator_gui_" .. data.entity.unit_number
+                local gui = player.gui.screen[gui_name]
+                if gui and gui.content and gui.content.working then
+                    local working_sprite = "utility/"
+                    local working_label = ""
+                    if data.cpu:is_halted() then
+                        working_sprite = working_sprite .. "status_not_working"
+                        working_label = working_label .. "Halted"
+                    elseif #data.cpu:get_errors() ~= 0 then
+                        working_sprite = working_sprite .. "status_yellow"
+                        working_label = working_label .. "Error"
+                    else
+                        working_sprite = working_sprite .. "status_working"
+                        working_label = working_label .. "Working"
+                    end
+                    gui.content.working.working_icon.sprite = working_sprite
+                    gui.content.working.working_label.caption = working_label
+                end
+            end
+
+            -- Update "connected" GUI element
+            local green_network = entity.get_circuit_network(defines.wire_type.green)
+            local red_network = entity.get_circuit_network(defines.wire_type.red)
+
+            local connected_label_caption = ""
+            if green_network or red_network then
+                connected_label_caption = "Connected to circuit network"
+            else
+                connected_label_caption = "Not connected"
+            end
+
+            for _, player in pairs(game.players) do
+                local gui_name = "assembly_combinator_gui_" .. data.entity.unit_number
+                local gui = player.gui.screen[gui_name]
+                if gui and gui.content
+                    and gui.content.connected
+                    and gui.content.connected.connected_label
+                then
+                    gui.content.connected.connected_label.caption = connected_label_caption
+                end
+            end
+
             -- Handle outputs
             for i = 0, 3 do
                 local output = data.cpu:get_register("o" .. i)
