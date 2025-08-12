@@ -1,4 +1,10 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.3.0
+Date: 12. 08. 2025
+  Major Features:
+    - Overhauls the assembly combinator GUI
+    - Adds error reporting and an error flag
+---------------------------------------------------------------------------------------------------
 Version: 0.2.0
 Date: 29. 07. 2025
   Major Features:
