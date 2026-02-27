@@ -78,6 +78,11 @@ function module:step()
     end
 
     local fetch = self.memory[self.instruction_pointer]
+    if fetch == nil then
+        self.status.error = true
+        table.insert(self.errors, "No instruction at line " .. self.instruction_pointer)
+        return
+    end
     fetch = fetch:gsub("^[^:]*:%s*", "")           -- Remove label on current instruction
     fetch = fetch:gsub("#.*", ""):gsub("%s+$", "") -- Remove comments "#" and trailing whitespace
 
@@ -101,7 +106,15 @@ function module:step()
             return
         end
         if args[1] ~= "x0" then
-            self.registers[args[1]] = self.registers[args[2]] + tonumber(args[3])
+            local rs = self.registers[args[2]]
+            local imm = tonumber(args[3])
+            if rs == nil or imm == nil then
+                self.status.error = true
+                table.insert(self.errors,
+                    "[ADDI:" .. self.instruction_pointer .. "] Invalid register or immediate value")
+                return
+            end
+            self.registers[args[1]] = rs + imm
         end
     elseif instruction == "SUB" then
         if #args ~= 3 then
@@ -112,7 +125,15 @@ function module:step()
             return
         end
         if args[1] ~= "x0" then
-            self.registers[args[1]] = self.registers[args[2]] - self.registers[args[3]]
+            local rs = self.registers[args[2]]
+            local rt = self.registers[args[3]]
+            if rs == nil or rt == nil then
+                self.status.error = true
+                table.insert(self.errors,
+                    "[SUB:" .. self.instruction_pointer .. "] Invalid register name")
+                return
+            end
+            self.registers[args[1]] = rs - rt
         end
     elseif instruction == "SLT" then
         if #args ~= 3 then
@@ -122,7 +143,15 @@ function module:step()
                 self.instruction_pointer .. "] " .. "Unexpected number of arguments. Expected 3, got " .. #args)
             return
         end
-        if self.registers[args[2]] < self.registers[args[3]] then
+        local rs = self.registers[args[2]]
+        local rt = self.registers[args[3]]
+        if rs == nil or rt == nil then
+            self.status.error = true
+            table.insert(self.errors,
+                "[SLT:" .. self.instruction_pointer .. "] Invalid register name")
+            return
+        end
+        if rs < rt then
             self.registers[args[1]] = 1
         else
             self.registers[args[1]] = 0
@@ -135,7 +164,15 @@ function module:step()
                 self.instruction_pointer .. "] " .. "Unexpected number of arguments. Expected 3, got " .. #args)
             return
         end
-        if self.registers[args[2]] < tonumber(args[3]) then
+        local rs = self.registers[args[2]]
+        local imm = tonumber(args[3])
+        if rs == nil or imm == nil then
+            self.status.error = true
+            table.insert(self.errors,
+                "[SLTI:" .. self.instruction_pointer .. "] Invalid register or immediate value")
+            return
+        end
+        if rs < imm then
             self.registers[args[1]] = 1
         else
             self.registers[args[1]] = 0
@@ -145,9 +182,23 @@ function module:step()
             if self.status["wait_cycles"] == nil then
                 local register_pattern = "^x"
                 if args[1]:find(register_pattern) ~= nil then
-                    self.status["wait_cycles"] = self.registers[args[1]] - 1
+                    local val = self.registers[args[1]]
+                    if val == nil then
+                        self.status.error = true
+                        table.insert(self.errors,
+                            "[WAIT:" .. self.instruction_pointer .. "] Invalid register name: " .. args[1])
+                        return
+                    end
+                    self.status["wait_cycles"] = val - 1
                 else
-                    self.status["wait_cycles"] = tonumber(args[1]) - 1
+                    local val = tonumber(args[1])
+                    if val == nil then
+                        self.status.error = true
+                        table.insert(self.errors,
+                            "[WAIT:" .. self.instruction_pointer .. "] Invalid wait value: " .. args[1])
+                        return
+                    end
+                    self.status["wait_cycles"] = val - 1
                 end
                 return
             elseif self.status.wait_cycles > 1 then
@@ -158,6 +209,13 @@ function module:step()
             end
         end
     elseif instruction == "WSIG" then
+        if #args < 3 then
+            self.status.error = true
+            table.insert(self.errors,
+                "[WSIG:" ..
+                self.instruction_pointer .. "] " .. "Unexpected number of arguments. Expected 3, got " .. #args)
+            return
+        end
         local output_register_pattern = "^o"
         if args[1]:find(output_register_pattern) ~= nil then
             self.registers[args[1]] = { name = args[2], count = self.registers[args[3]] }
@@ -176,10 +234,17 @@ function module:step()
                 self.instruction_pointer .. "] " .. "Unexpected number of arguments, expected 2, got " .. #args)
             return
         end
+        local target = self.labels[args[2]]
+        if target == nil then
+            self.status.error = true
+            table.insert(self.errors,
+                "[JAL:" .. self.instruction_pointer .. "] Undefined label: " .. args[2])
+            return
+        end
         if args[1] ~= "x0" then
             self.registers[args[1]] = self.instruction_pointer
         end
-        self.instruction_pointer = self.labels[args[2]]
+        self.instruction_pointer = target
         self.status.jump_executed = true
     elseif instruction == "BEQ" then
         if #args ~= 3 then
@@ -190,7 +255,14 @@ function module:step()
             return
         end
         if self.registers[args[1]] == self.registers[args[2]] then
-            self.instruction_pointer = self.labels[args[3]]
+            local target = self.labels[args[3]]
+            if target == nil then
+                self.status.error = true
+                table.insert(self.errors,
+                    "[BEQ:" .. self.instruction_pointer .. "] Undefined label: " .. args[3])
+                return
+            end
+            self.instruction_pointer = target
             self.status.jump_executed = true
         end
     elseif instruction == "BNE" then
@@ -202,7 +274,14 @@ function module:step()
             return
         end
         if self.registers[args[1]] ~= self.registers[args[2]] then
-            self.instruction_pointer = self.labels[args[3]]
+            local target = self.labels[args[3]]
+            if target == nil then
+                self.status.error = true
+                table.insert(self.errors,
+                    "[BNE:" .. self.instruction_pointer .. "] Undefined label: " .. args[3])
+                return
+            end
+            self.instruction_pointer = target
             self.status.jump_executed = true
         end
     else
