@@ -1,0 +1,6 @@
+.gitattributes export-ignore
+.github export-ignore
+.luacheckrc export-ignore
+.lua-format export-ignore
+test.lua export-ignore
+.claude export-ignore

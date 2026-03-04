@@ -1,0 +1,46 @@
+name: Publish to Mod Portal
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Run Busted
+        uses: lunarmodules/busted@v2.2.0
+        with:
+          args: test.lua
+
+  publish:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Update info.json version from tag
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          jq --arg v "$VERSION" '.version = $v' info.json > info.tmp && mv info.tmp info.json
+          echo "Publishing version $VERSION"
+
+      - name: Validate mod
+        uses: TheBrutalX/Factorio-mod-uploader-action@v2
+        with:
+          action: validate
+
+      - name: Create zip
+        uses: TheBrutalX/Factorio-mod-uploader-action@v2
+        with:
+          action: compress
+
+      - name: Upload to mod portal
+        uses: TheBrutalX/Factorio-mod-uploader-action@v2
+        with:
+          action: upload
+          factorio-api-key: ${{ secrets.FACTORIO_API_KEY }}
