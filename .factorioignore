@@ -1,0 +1,8 @@
+.factorioignore
+.git/
+.gitattributes
+.github/
+.luacheckrc
+.lua-format
+.claude/
+test.lua
