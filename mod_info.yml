@@ -3,7 +3,4 @@ mod_info:
   summary: Adds assembly combinators that allow programming signal logic using a simple assembly-like language
   description_file: README.md
   license: mit
-  category: circuit-network
-  tags:
-    - circuit-network
-    - combinator
+  category: content
