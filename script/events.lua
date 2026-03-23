@@ -45,7 +45,7 @@ script.on_event(defines.events.on_tick, function(event)
                         gui.content.errors.caption = data.cpu:get_errors()[1]
                     end
                 end
-                return
+                goto continue
             end
 
             -- Update GUI icons
@@ -108,5 +108,6 @@ script.on_event(defines.events.on_tick, function(event)
                 end
             end
         end
+        ::continue::
     end
 end)
