@@ -11,12 +11,14 @@ script.on_event(defines.events.on_built_entity, function(event)
 end)
 
 local function cleanup_entity(entity)
-    if entity and entity.valid then
+    if entity and entity.valid and entity.unit_number then
         storage.assembly_combinators[entity.unit_number] = nil
     end
 end
 
-script.on_event(defines.events.on_entity_died, cleanup_entity)
+script.on_event(defines.events.on_entity_died, function(event)
+    cleanup_entity(event.entity)
+end)
 script.on_event(defines.events.on_robot_pre_mined, function(event)
     cleanup_entity(event.entity)
 end)
