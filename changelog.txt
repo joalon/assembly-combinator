@@ -1,4 +1,11 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.6.1
+Date: 23. 03. 2026
+  Bugfixes:
+    - Fixed crash when mining non-combinator entities (e.g. Ultracube items)
+    - Fixed on_entity_died not cleaning up assembly combinators
+    - Fixed one erroring combinator blocking all others from processing
+---------------------------------------------------------------------------------------------------
 Version: 0.6.0
 Date: 04. 03. 2026
   Improvements:
