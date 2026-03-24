@@ -1,4 +1,14 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.6.2
+Date: 24. 03. 2026
+  Bugfixes:
+    - Fixed cut-and-paste not preserving the assembly combinator program
+    - Fixed copy-paste settings (shift+click) not transferring the program
+    - Fixed cloned combinators retaining stale circuit network outputs
+    - Fixed assembly combinators not being registered when built by robots or scripts
+  Features:
+    - Assembly combinator programs are now preserved in blueprints
+---------------------------------------------------------------------------------------------------
 Version: 0.6.1
 Date: 23. 03. 2026
   Bugfixes:

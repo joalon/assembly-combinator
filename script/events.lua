@@ -1,26 +1,77 @@
 local cpu = require("cpu")
 
-local function register_entity(entity)
-    if entity.name == "assembly-combinator" then
-        storage.assembly_combinators[entity.unit_number] = {
-            entity = entity,
-            cpu = cpu.new(),
-            last_process_tick = game.tick,
-        }
+local function clear_output_sections(entity)
+    local behavior = entity.get_control_behavior()
+    if behavior then
+        for i = behavior.sections_count, 1, -1 do
+            behavior.remove_section(i)
+        end
     end
 end
 
+local function register_entity(entity, code)
+    if entity.name == "assembly-combinator" then
+        storage.assembly_combinators[entity.unit_number] = {
+            entity = entity,
+            cpu = cpu.new(code),
+            last_process_tick = game.tick,
+        }
+        clear_output_sections(entity)
+    end
+end
+
+local function get_code_from_tags(tags)
+    if tags and tags.assembly_combinator_code then
+        return tags.assembly_combinator_code
+    end
+    return nil
+end
+
 script.on_event(defines.events.on_built_entity, function(event)
-    register_entity(event.entity)
+    register_entity(event.entity, get_code_from_tags(event.tags))
 end)
 script.on_event(defines.events.on_robot_built_entity, function(event)
-    register_entity(event.entity)
+    register_entity(event.entity, get_code_from_tags(event.tags))
 end)
 script.on_event(defines.events.on_entity_cloned, function(event)
-    register_entity(event.destination)
+    local source = storage.assembly_combinators[event.source.unit_number]
+    local code = source and source.cpu:get_code() or nil
+    register_entity(event.destination, code)
 end)
 script.on_event(defines.events.script_raised_built, function(event)
-    register_entity(event.entity)
+    register_entity(event.entity, get_code_from_tags(event.tags))
+end)
+script.on_event(defines.events.on_entity_settings_pasted, function(event)
+    if event.destination.name == "assembly-combinator" then
+        local source = storage.assembly_combinators[event.source.unit_number]
+        local code = source and source.cpu:get_code() or nil
+        local dest = storage.assembly_combinators[event.destination.unit_number]
+        if dest then
+            dest.cpu:update_code(code or {"HLT"})
+            clear_output_sections(event.destination)
+        end
+    end
+end)
+
+script.on_event(defines.events.on_player_setup_blueprint, function(event)
+    local player = game.get_player(event.player_index)
+    if not player then return end
+
+    local blueprint = player.blueprint_to_setup
+    if not blueprint or not blueprint.valid_for_read then
+        blueprint = player.cursor_stack
+    end
+    if not blueprint or not blueprint.valid_for_read then return end
+
+    local mapping = event.mapping.get()
+    for blueprint_index, entity in pairs(mapping) do
+        if entity.valid and entity.name == "assembly-combinator" then
+            local data = storage.assembly_combinators[entity.unit_number]
+            if data then
+                blueprint.set_blueprint_entity_tag(blueprint_index, "assembly_combinator_code", data.cpu:get_code())
+            end
+        end
+    end
 end)
 
 local function cleanup_entity(entity)

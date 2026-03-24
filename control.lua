@@ -13,6 +13,10 @@ function ac_dev_mode()
 		["constant-combinator"] = 5,
 		["selector-combinator"] = 5,
 		["medium-electric-pole"] = 10,
+		["power-armor"] = 1,
+		["personal-roboport-equipment"] = 1,
+		["fission-reactor-equipment"] = 1,
+		["construction-robot"] = 10,
 	})
 end
 
