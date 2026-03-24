@@ -1,13 +1,26 @@
 local cpu = require("cpu")
 
-script.on_event(defines.events.on_built_entity, function(event)
-    if event.entity.name == "assembly-combinator" then
-        storage.assembly_combinators[event.entity.unit_number] = {
-            entity = event.entity,
+local function register_entity(entity)
+    if entity.name == "assembly-combinator" then
+        storage.assembly_combinators[entity.unit_number] = {
+            entity = entity,
             cpu = cpu.new(),
             last_process_tick = game.tick,
         }
     end
+end
+
+script.on_event(defines.events.on_built_entity, function(event)
+    register_entity(event.entity)
+end)
+script.on_event(defines.events.on_robot_built_entity, function(event)
+    register_entity(event.entity)
+end)
+script.on_event(defines.events.on_entity_cloned, function(event)
+    register_entity(event.destination)
+end)
+script.on_event(defines.events.script_raised_built, function(event)
+    register_entity(event.entity)
 end)
 
 local function cleanup_entity(entity)
