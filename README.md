@@ -10,16 +10,17 @@ Download it from the [mod portal](https://mods.factorio.com/mod/assembly-combina
 ### Example programs
 
 A simple counter:
+
 ```
 main:
-    ADDI x10, x0, 0             # Initialize counter to 0
+    ADDI x10, x0, 0              # Initialize counter to 0
 loop:
-    ADDI x10, x10, 1            # Increment counter
+    ADDI x10, x10, 1             # Increment counter
     WSIG o1, copper-plate, x10   # Output counter value
-    WAIT 60                     # Wait 1 second (60 game ticks)
-    SLTI x6, x10, 100           # Check if counter < 100
-    BNE  x6, x0, loop           # Branch if not equal to zero
-    JAL  x1, main               # Jump back to main
+    WAIT 60                      # Wait 1 second (60 game ticks)
+    SLTI x6, x10, 100            # Check if counter < 100
+    BNE  x6, x0, loop            # Branch if not equal to zero
+    JAL  x1, main                # Jump back to main
 ```
 
 ## Contributions
