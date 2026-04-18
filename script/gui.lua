@@ -118,6 +118,21 @@ function create_custom_gui(player, entity)
         caption = working_label
     })
 
+    local preview_frame = content.add({
+        type = "frame",
+        name = "preview_frame",
+        style = "deep_frame_in_shallow_frame",
+    })
+    preview_frame.style.horizontally_stretchable = true
+
+    local preview = preview_frame.add({
+        type = "entity-preview",
+        name = "preview",
+    })
+    preview.style.horizontally_stretchable = true
+    preview.style.height = 100
+    preview.entity = entity
+
     local code = ""
     for i, line in ipairs(cpu:get_code()) do
         if i == 1 then
@@ -132,7 +147,7 @@ function create_custom_gui(player, entity)
         name = "combinator_memory",
         text = code,
     })
-    textbox.style.size = { 300, 300 }
+    textbox.style.size = { 360, 300 }
 
     content.add({
         type = "button",
