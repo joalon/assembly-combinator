@@ -133,6 +133,32 @@ function create_custom_gui(player, entity)
     preview.style.height = 100
     preview.entity = entity
 
+    content.add({
+        type = "label",
+        name = "output_label",
+        caption = "Output",
+    })
+
+    local output_switch_state
+    if entity.get_control_behavior().enabled then
+        output_switch_state = "right"
+    else
+        output_switch_state = "left"
+    end
+    content.add({
+        type = "switch",
+        name = "output_switch",
+        switch_state = output_switch_state,
+        allow_none_state = false,
+        left_label_caption = "Off",
+        right_label_caption = "On",
+    })
+
+    content.add({
+        type = "line",
+        name = "output_separator",
+    })
+
     local code = ""
     for i, line in ipairs(cpu:get_code()) do
         if i == 1 then
@@ -203,4 +229,27 @@ script.on_event(defines.events.on_gui_closed, function(event)
     if event.element and event.element.name == "assembly_combinator_gui" then
         event.element.destroy()
     end
+end)
+
+script.on_event(defines.events.on_gui_switch_state_changed, function(event)
+    if event.element.name ~= "output_switch" then
+        return
+    end
+
+    local unit_number = tonumber(string.match(event.element.parent.parent.name, "%d+"))
+    if unit_number == nil then
+        return
+    end
+
+    local data = storage.assembly_combinators[unit_number]
+    if data == nil or not data.entity.valid then
+        return
+    end
+
+    local behavior = data.entity.get_control_behavior()
+    if behavior == nil then
+        return
+    end
+
+    behavior.enabled = (event.element.switch_state == "right")
 end)
