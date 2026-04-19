@@ -168,18 +168,28 @@ function create_custom_gui(player, entity)
         end
     end
 
-    local textbox = content.add({
+    local code_area = content.add({
+        type = "frame",
+        name = "code_area",
+        direction = "vertical",
+        style = "deep_frame_in_shallow_frame",
+    })
+
+    local textbox = code_area.add({
         type = "text-box",
         name = "combinator_memory",
         text = code,
     })
-    textbox.style.size = { 360, 300 }
+    textbox.style.width = 400
+    textbox.style.height = 300
 
-    content.add({
+    local save_button = code_area.add({
         type = "button",
         name = "assembly-combinator-save-button",
         caption = "Save",
     })
+    save_button.style.horizontally_stretchable = true
+    save_button.style.minimal_width = 400
 
     content.add({
         type = "line"
@@ -205,10 +215,11 @@ script.on_event(defines.events.on_gui_click, function(event)
     if event.element.name == "assembly-combinator-close-button" then
         event.element.parent.parent.destroy()
     elseif event.element.name == "assembly-combinator-save-button" then
-        local unit_number = tonumber(string.match(event.element.parent.parent.name, "%d+"))
+        local unit_number = tonumber(string.match(event.element.parent.parent.parent.name, "%d+"))
 
+        local textbox = event.element.parent.combinator_memory
         local updated_code = {}
-        for line in string.gmatch(event.element.parent["combinator_memory"].text, "[^\r\n]+") do
+        for line in string.gmatch(textbox.text, "[^\r\n]+") do
             table.insert(updated_code, line)
         end
         storage.assembly_combinators[unit_number].cpu:update_code(updated_code)
@@ -253,3 +264,4 @@ script.on_event(defines.events.on_gui_switch_state_changed, function(event)
 
     behavior.enabled = (event.element.switch_state == "right")
 end)
+
