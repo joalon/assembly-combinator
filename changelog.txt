@@ -1,4 +1,13 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.7.0
+Date: 19. 04. 2026
+  Features:
+    - Added entity preview to the assembly combinator GUI
+    - Added an output on/off switch to suppress signal output without halting the program
+  Improvements:
+    - Grouped the code editor and Save button so Save stretches to match the editor width
+    - Widened the code editor
+---------------------------------------------------------------------------------------------------
 Version: 0.6.2
 Date: 24. 03. 2026
   Bugfixes:
