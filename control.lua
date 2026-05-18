@@ -1,4 +1,4 @@
-function ac_dev_mode()
+local function ac_dev_mode()
 	local freeplay = remote.interfaces["freeplay"]
 	if freeplay then -- Disable freeplay popup-message
 		if freeplay["set_skip_intro"] then

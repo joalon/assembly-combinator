@@ -31,7 +31,7 @@ describe("CPU tests", function()
 	end)
 
 	it("can halt by default", function()
-		myCpu = cpu.new()
+		local myCpu = cpu.new()
 
 		for _ = 1, 5 do
 			myCpu:step()

@@ -90,7 +90,7 @@ script.on_event(defines.events.on_pre_player_mined_item, function(event)
     cleanup_entity(event.entity)
 end)
 
-script.on_event(defines.events.on_tick, function(event)
+script.on_event(defines.events.on_tick, function()
     for unit_number, data in pairs(storage.assembly_combinators) do
         local entity = data.entity
 
@@ -138,7 +138,7 @@ script.on_event(defines.events.on_tick, function(event)
             local green_network = entity.get_circuit_network(defines.wire_type.green)
             local red_network = entity.get_circuit_network(defines.wire_type.red)
 
-            local connected_label_caption = ""
+            local connected_label_caption
             if green_network or red_network then
                 connected_label_caption = "Connected to circuit network"
             else

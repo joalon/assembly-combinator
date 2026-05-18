@@ -522,10 +522,11 @@ do -- Factorio STDs
 			game = LuaGameScript,
 			remote = LuaRemote,
 		},
-		globals = { "global" },
+		globals = { "global", "storage" },
 	}
 
 	stds.factorio_data = {
+		globals = { "flib" },
 		read_globals = {
 			data = { fields = { "extend", "is_demo", raw = { other_fields = true, read_only = false } } },
 			settings = { fields = { "startup", "global", "player" } },

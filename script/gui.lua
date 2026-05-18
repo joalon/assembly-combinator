@@ -1,3 +1,5 @@
+local create_custom_gui
+
 script.on_event(defines.events.on_gui_opened, function(event)
     if event.gui_type == defines.gui_type.entity then
         local entity = event.entity
@@ -8,7 +10,7 @@ script.on_event(defines.events.on_gui_opened, function(event)
     end
 end)
 
-function create_custom_gui(player, entity)
+create_custom_gui = function(player, entity)
     local gui_name = "assembly_combinator_gui_" .. entity.unit_number
     if player.gui.screen[gui_name] then
         -- following code crashes with "gui_name is nil" error
@@ -71,7 +73,7 @@ function create_custom_gui(player, entity)
     local green_network = entity.get_circuit_network(defines.wire_type.green)
     local red_network = entity.get_circuit_network(defines.wire_type.red)
 
-    local connected_label_caption = ""
+    local connected_label_caption
     if green_network or red_network then
         connected_label_caption = "Connected to circuit network"
     else
@@ -112,7 +114,7 @@ function create_custom_gui(player, entity)
         sprite = working_sprite,
         style = "status_image"
     }
-    local working_label = working.add({
+    working.add({
         type = "label",
         name = "working_label",
         caption = working_label

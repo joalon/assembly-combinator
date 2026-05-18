@@ -95,7 +95,7 @@ function module:step()
     if instruction == "HLT" then
         self.status.is_halted = true
         return
-    elseif instruction == "NOP" then
+    elseif instruction == "NOP" then -- luacheck: ignore 542
         -- nop
     elseif instruction == "ADDI" then
         if #args ~= 3 then
