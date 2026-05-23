@@ -705,4 +705,29 @@ describe("manual data", function()
             assert.is_true(manual.text_counts[page] >= 1)
         end
     end)
+
+    it("has a locale key for every text_N declared in text_counts", function()
+        local function read_file(path)
+            local f = assert(io.open(path, "r"))
+            local s = f:read("*a")
+            f:close()
+            return s
+        end
+
+        local cfg = read_file("locale/en/manual.cfg")
+
+        for page, count in pairs(manual.text_counts) do
+            for i = 1, count do
+                local key = "page_" .. page .. "_text_" .. i
+                assert.is_truthy(
+                    cfg:find(key .. "=", 1, true),
+                    "missing locale key: " .. key
+                )
+            end
+            assert.is_truthy(cfg:find("menu_" .. page .. "=", 1, true),
+                "missing menu_ key for page: " .. page)
+            assert.is_truthy(cfg:find("title_" .. page .. "=", 1, true),
+                "missing title_ key for page: " .. page)
+        end
+    end)
 end)
