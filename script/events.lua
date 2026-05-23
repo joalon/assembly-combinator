@@ -9,6 +9,13 @@ local function clear_output_sections(entity)
     end
 end
 
+local function resolve_signal_type(name)
+    if prototypes.item[name] then return "item" end
+    if prototypes.virtual_signal[name] then return "virtual" end
+    if prototypes.fluid[name] then return "fluid" end
+    return nil
+end
+
 local function read_wire_signals(entity)
     local result = { red = {}, green = {} }
     local wires = {
@@ -179,15 +186,28 @@ script.on_event(defines.events.on_tick, function()
             for i = 0, 3 do
                 local output = data.cpu:get_register("o" .. i)
                 if output.count > 0 and output.name ~= nil then
-                    local behavior = entity.get_control_behavior()
-
-                    if behavior.sections_count == 0 then
-                        behavior.add_section()
+                    local sig_type = resolve_signal_type(output.name)
+                    if not sig_type then
+                        data.cpu.status.error = true
+                        table.insert(data.cpu.errors,
+                            "[output o" .. i .. "] Unknown signal name: " .. output.name)
+                    else
+                        local behavior = entity.get_control_behavior()
+                        if behavior.sections_count == 0 then
+                            behavior.add_section()
+                        end
+                        local ok, err = pcall(function()
+                            behavior.get_section(1).set_slot(1, {
+                                value = { type = sig_type, name = output.name, quality = "normal" },
+                                min = output.count,
+                            })
+                        end)
+                        if not ok then
+                            data.cpu.status.error = true
+                            table.insert(data.cpu.errors,
+                                "[output o" .. i .. "] " .. tostring(err))
+                        end
                     end
-                    behavior.get_section(1).set_slot(1, {
-                        value = { type = "item", name = output.name, quality = "normal" },
-                        min = output.count,
-                    })
                 end
             end
         end
