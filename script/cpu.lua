@@ -226,15 +226,33 @@ function module:step()
             return
         end
         local output_register_pattern = "^o"
-        if args[1]:find(output_register_pattern) ~= nil then
-            self.registers[args[1]] = { name = args[2], count = self.registers[args[3]] }
-        else
+        if args[1]:find(output_register_pattern) == nil then
             self.status.error = true
             table.insert(self.errors,
                 "[WSIG:" ..
                 self.instruction_pointer .. "] " .. "Unexpected output register name. Expected o0-o3, got " .. args[1])
             return
         end
+        local count
+        if args[3]:sub(1, 1) == "x" then
+            count = self.registers[args[3]]
+            if count == nil then
+                self.status.error = true
+                table.insert(self.errors,
+                    "[WSIG:" .. self.instruction_pointer .. "] Invalid source register: " .. args[3])
+                return
+            end
+        else
+            count = tonumber(args[3])
+            if count == nil then
+                self.status.error = true
+                table.insert(self.errors,
+                    "[WSIG:" ..
+                    self.instruction_pointer .. "] Invalid count: " .. args[3] .. " (expected register or integer)")
+                return
+            end
+        end
+        self.registers[args[1]] = { name = args[2], count = count }
     elseif instruction == "RSIG" then
         if #args ~= 2 and #args ~= 3 then
             self.status.error = true
