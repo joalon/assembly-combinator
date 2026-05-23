@@ -670,3 +670,39 @@ describe("CPU tests", function()
 		assert.are.equal(1, #myCpu:get_errors())
 	end)
 end)
+
+local manual = require("script.manual")
+
+describe("manual data", function()
+    it("exposes a menu tree with reference and tutorial branches", function()
+        assert.is_table(manual.menu)
+        assert.is_table(manual.menu.reference)
+        assert.is_table(manual.menu.tutorial)
+        assert.are.equal(1, manual.menu.reference.registers)
+        assert.are.equal(1, manual.menu.reference.instructions)
+        assert.are.equal(1, manual.menu.tutorial["hello-signal"])
+        assert.are.equal(1, manual.menu.tutorial.counter)
+        assert.are.equal(1, manual.menu.tutorial.branching)
+    end)
+
+    it("declares a text_counts entry for every page in the menu plus the root", function()
+        local function collect_leaves(node, acc)
+            for name, child in pairs(node) do
+                table.insert(acc, name)
+                if type(child) == "table" then
+                    collect_leaves(child, acc)
+                end
+            end
+            return acc
+        end
+
+        local pages = collect_leaves(manual.menu, { "assembly-combinator" })
+        for _, page in ipairs(pages) do
+            assert.is_truthy(
+                manual.text_counts[page],
+                "missing text_counts entry for page: " .. page
+            )
+            assert.is_true(manual.text_counts[page] >= 1)
+        end
+    end)
+end)
