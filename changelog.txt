@@ -1,4 +1,14 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.8.0
+Date: 23. 05. 2026
+  Features:
+    - WSIG accepts an immediate integer count (e.g. WSIG o1, copper-plate, 42)
+    - RSIG reports an error for unknown signal names instead of silently reading 0
+  Bugfixes:
+    - Read all wire signals on the network, not just those whose type was "item" (RSIG silently returned 0 in Factorio 2.0)
+    - Use defines.wire_connector_id for get_circuit_network (fixes wire reading and the "Connected" GUI label in Factorio 2.0)
+    - Validate the output signal name and guard set_slot with pcall so a misspelled signal in WSIG surfaces as a combinator error instead of crashing the game
+---------------------------------------------------------------------------------------------------
 Version: 0.7.0
 Date: 19. 04. 2026
   Features:
