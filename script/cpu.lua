@@ -33,6 +33,7 @@ function module.new(code)
     for i = 0, 3 do
         cpuClass.registers["o" .. i] = { name = nil, count = 0 }
     end
+    cpuClass.wire_signals = { red = {}, green = {} }
 
     local memory = code or { "HLT" }
     cpuClass.memory = memory
@@ -60,6 +61,7 @@ function module:update_code(code)
     for i = 0, 3 do
         self.registers["o" .. i] = { name = nil, count = 0 }
     end
+    self.wire_signals = { red = {}, green = {} }
     self.status = {
         is_halted = false,
         jump_executed = false,
@@ -70,6 +72,13 @@ end
 
 function module:get_code()
     return self.memory
+end
+
+function module:set_wire_signals(signals)
+    self.wire_signals = {
+        red = signals and signals.red or {},
+        green = signals and signals.green or {},
+    }
 end
 
 function module:step()
