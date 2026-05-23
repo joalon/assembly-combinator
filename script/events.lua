@@ -16,6 +16,19 @@ local function resolve_signal_type(name)
     return nil
 end
 
+local known_signals_cache
+
+local function get_known_signals()
+    if not known_signals_cache then
+        local set = {}
+        for name in pairs(prototypes.item) do set[name] = true end
+        for name in pairs(prototypes.virtual_signal) do set[name] = true end
+        for name in pairs(prototypes.fluid) do set[name] = true end
+        known_signals_cache = set
+    end
+    return known_signals_cache
+end
+
 local function read_wire_signals(entity)
     local result = { red = {}, green = {} }
     local wires = {
@@ -124,7 +137,7 @@ script.on_event(defines.events.on_tick, function()
         else
             data.last_process_tick = game.tick
             data.cpu:set_wire_signals(read_wire_signals(entity))
-            data.cpu:step()
+            data.cpu:step(get_known_signals())
 
             -- Handle errors
             if #data.cpu:get_errors() ~= 0 then

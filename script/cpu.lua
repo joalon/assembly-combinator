@@ -81,7 +81,7 @@ function module:set_wire_signals(signals)
     }
 end
 
-function module:step()
+function module:step(known_signals)
     if self.status.is_halted or self.status.error then
         return
     end
@@ -275,6 +275,12 @@ function module:step()
             table.insert(self.errors,
                 "[RSIG:" ..
                 self.instruction_pointer .. "] Invalid wire selector. Expected red, green, or both, got " .. wire)
+            return
+        end
+        if known_signals and not known_signals[name] then
+            self.status.error = true
+            table.insert(self.errors,
+                "[RSIG:" .. self.instruction_pointer .. "] Unknown signal name: " .. name)
             return
         end
         local red_count = self.wire_signals.red[name] or 0
