@@ -235,6 +235,43 @@ function module:step()
                 self.instruction_pointer .. "] " .. "Unexpected output register name. Expected o0-o3, got " .. args[1])
             return
         end
+    elseif instruction == "RSIG" then
+        if #args ~= 2 and #args ~= 3 then
+            self.status.error = true
+            table.insert(self.errors,
+                "[RSIG:" ..
+                self.instruction_pointer .. "] " .. "Unexpected number of arguments. Expected 2 or 3, got " .. #args)
+            return
+        end
+        local dest = args[1]
+        local name = args[2]
+        local wire = args[3] or "both"
+        if self.registers[dest] == nil or dest:sub(1, 1) ~= "x" then
+            self.status.error = true
+            table.insert(self.errors,
+                "[RSIG:" .. self.instruction_pointer .. "] Invalid destination register: " .. dest)
+            return
+        end
+        if wire ~= "red" and wire ~= "green" and wire ~= "both" then
+            self.status.error = true
+            table.insert(self.errors,
+                "[RSIG:" ..
+                self.instruction_pointer .. "] Invalid wire selector. Expected red, green, or both, got " .. wire)
+            return
+        end
+        local red_count = self.wire_signals.red[name] or 0
+        local green_count = self.wire_signals.green[name] or 0
+        local value
+        if wire == "red" then
+            value = red_count
+        elseif wire == "green" then
+            value = green_count
+        else
+            value = red_count + green_count
+        end
+        if dest ~= "x0" then
+            self.registers[dest] = value
+        end
     elseif instruction == "JAL" then
         if #args ~= 2 then
             self.status.error = true

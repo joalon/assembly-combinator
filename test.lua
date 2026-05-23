@@ -555,4 +555,37 @@ describe("CPU tests", function()
 		assert.is_nil(next(myCpu.wire_signals.red))
 		assert.is_nil(next(myCpu.wire_signals.green))
 	end)
+
+	it("RSIG reads named signal from red wire", function()
+		local myCpu = cpu.new({ "RSIG x5, iron-plate, red" })
+		myCpu:set_wire_signals({
+			red = { ["iron-plate"] = 42 },
+			green = { ["iron-plate"] = 7 },
+		})
+		myCpu:step()
+		assert.is_false(myCpu.status.error)
+		assert.are.equal(42, myCpu:get_register("x5"))
+	end)
+
+	it("RSIG reads named signal from green wire", function()
+		local myCpu = cpu.new({ "RSIG x5, iron-plate, green" })
+		myCpu:set_wire_signals({
+			red = { ["iron-plate"] = 42 },
+			green = { ["iron-plate"] = 7 },
+		})
+		myCpu:step()
+		assert.is_false(myCpu.status.error)
+		assert.are.equal(7, myCpu:get_register("x5"))
+	end)
+
+	it("RSIG with 'both' sums red and green counts", function()
+		local myCpu = cpu.new({ "RSIG x5, iron-plate, both" })
+		myCpu:set_wire_signals({
+			red = { ["iron-plate"] = 42 },
+			green = { ["iron-plate"] = 7 },
+		})
+		myCpu:step()
+		assert.is_false(myCpu.status.error)
+		assert.are.equal(49, myCpu:get_register("x5"))
+	end)
 end)
