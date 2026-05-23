@@ -521,6 +521,7 @@ do -- Factorio STDs
 			rendering = LuaRendering,
 			game = LuaGameScript,
 			remote = LuaRemote,
+			prototypes = { other_fields = true },
 		},
 		globals = { "global", "storage" },
 	}
@@ -1910,6 +1911,7 @@ stds.factorio_defines = {
 				},
 				wire_connection_id = { fields = { "electric_pole", "power_switch_left", "power_switch_right" } },
 				wire_type = { fields = { "copper", "green", "red" } },
+				wire_connector_id = { other_fields = true },
 			},
 		},
 	},
