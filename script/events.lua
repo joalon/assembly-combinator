@@ -194,3 +194,22 @@ script.on_event(defines.events.on_tick, function()
         ::continue::
     end
 end)
+
+local function open_manual(player_index)
+    if not remote.interfaces["informatron"] then return end
+    remote.call("informatron", "informatron_open_to_page", {
+        player_index = player_index,
+        interface    = "assembly-combinator",
+        page_name    = "assembly-combinator",
+    })
+end
+
+script.on_event("assembly-combinator-open-manual", function(event)
+    open_manual(event.player_index)
+end)
+
+script.on_event(defines.events.on_lua_shortcut, function(event)
+    if event.prototype_name == "assembly-combinator-open-manual" then
+        open_manual(event.player_index)
+    end
+end)
