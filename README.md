@@ -25,4 +25,4 @@ loop:
 
 ## Contributions
 
-PRs are welcome! Make sure to lint and test the code with [Busted](https://lunarmodules.github.io/busted). `busted test.lua`
+PRs are welcome! Make sure to lint and test the code with [luacheck](https://github.com/mpeterv/luacheck) and [Busted](https://lunarmodules.github.io/busted). `busted test.lua`
