@@ -40,6 +40,15 @@ create_custom_gui = function(player, entity)
     })
     filler.style.height = 24
     filler.style.horizontally_stretchable = true
+    if remote.interfaces["informatron"] then
+        titlebar.add({
+            type    = "sprite-button",
+            name    = "assembly-combinator-manual-button",
+            style   = "frame_action_button",
+            sprite  = "assembly-combinator-manual",
+            tooltip = { "gui.assembly-combinator-open-manual" },
+        })
+    end
     titlebar.add({
         type = "sprite-button",
         name = "assembly-combinator-close-button",
@@ -216,6 +225,14 @@ end
 script.on_event(defines.events.on_gui_click, function(event)
     if event.element.name == "assembly-combinator-close-button" then
         event.element.parent.parent.destroy()
+    elseif event.element.name == "assembly-combinator-manual-button" then
+        if remote.interfaces["informatron"] then
+            remote.call("informatron", "informatron_open_to_page", {
+                player_index = event.player_index,
+                interface    = "assembly-combinator",
+                page_name    = "assembly-combinator",
+            })
+        end
     elseif event.element.name == "assembly-combinator-save-button" then
         local unit_number = tonumber(string.match(event.element.parent.parent.parent.name, "%d+"))
 
