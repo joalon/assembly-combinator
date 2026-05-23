@@ -588,4 +588,15 @@ describe("CPU tests", function()
 		assert.is_false(myCpu.status.error)
 		assert.are.equal(49, myCpu:get_register("x5"))
 	end)
+
+	it("RSIG defaults to 'both' when wire is omitted", function()
+		local myCpu = cpu.new({ "RSIG x5, iron-plate" })
+		myCpu:set_wire_signals({
+			red = { ["iron-plate"] = 4 },
+			green = { ["iron-plate"] = 6 },
+		})
+		myCpu:step()
+		assert.is_false(myCpu.status.error)
+		assert.are.equal(10, myCpu:get_register("x5"))
+	end)
 end)
