@@ -1918,6 +1918,7 @@ stds.factorio_defines = {
 -- Add busted for the test file
 files["**/test*.lua"] = {
 	std = "+busted",
+	read_globals = { "io" },
 }
 
 files["spec/**/*.lua"] = {
