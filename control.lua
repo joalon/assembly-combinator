@@ -37,3 +37,10 @@ end)
 
 require("script.gui")
 require("script.events")
+
+local manual = require("script.manual")
+
+remote.add_interface("assembly-combinator", {
+    informatron_menu         = manual.informatron_menu,
+    informatron_page_content = manual.informatron_page_content,
+})
