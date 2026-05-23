@@ -12,8 +12,8 @@ end
 local function read_wire_signals(entity)
     local result = { red = {}, green = {} }
     local wires = {
-        red = entity.get_circuit_network(defines.wire_type.red),
-        green = entity.get_circuit_network(defines.wire_type.green),
+        red = entity.get_circuit_network(defines.wire_connector_id.circuit_red),
+        green = entity.get_circuit_network(defines.wire_connector_id.circuit_green),
     }
     for color, network in pairs(wires) do
         if network and network.signals then
@@ -154,8 +154,8 @@ script.on_event(defines.events.on_tick, function()
             end
 
             -- Update "connected" GUI element
-            local green_network = entity.get_circuit_network(defines.wire_type.green)
-            local red_network = entity.get_circuit_network(defines.wire_type.red)
+            local green_network = entity.get_circuit_network(defines.wire_connector_id.circuit_green)
+            local red_network = entity.get_circuit_network(defines.wire_connector_id.circuit_red)
 
             local connected_label_caption
             if green_network or red_network then
