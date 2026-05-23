@@ -70,8 +70,8 @@ create_custom_gui = function(player, entity)
     connected.style.left_margin = -12
     connected.style.right_margin = -12
 
-    local green_network = entity.get_circuit_network(defines.wire_type.green)
-    local red_network = entity.get_circuit_network(defines.wire_type.red)
+    local green_network = entity.get_circuit_network(defines.wire_connector_id.circuit_green)
+    local red_network = entity.get_circuit_network(defines.wire_connector_id.circuit_red)
 
     local connected_label_caption
     if green_network or red_network then
