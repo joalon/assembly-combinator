@@ -18,7 +18,7 @@ local function read_wire_signals(entity)
     for color, network in pairs(wires) do
         if network and network.signals then
             for _, entry in pairs(network.signals) do
-                if entry.signal and entry.signal.type == "item" then
+                if entry.signal then
                     result[color][entry.signal.name] = entry.count
                 end
             end
