@@ -1,4 +1,9 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.8.0
+Date: 23. 05. 2026
+  Major Features:
+    - Added an in-game reference and tutorial manual for the assembly language, accessible through the optional Informatron dependency. Open it from the new titlebar button on the combinator GUI, the shortcut bar, or a bindable hotkey.
+---------------------------------------------------------------------------------------------------
 Version: 0.7.0
 Date: 19. 04. 2026
   Features:
