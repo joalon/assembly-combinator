@@ -599,4 +599,22 @@ describe("CPU tests", function()
 		assert.is_false(myCpu.status.error)
 		assert.are.equal(10, myCpu:get_register("x5"))
 	end)
+
+	it("RSIG returns 0 when signal absent from selected wire", function()
+		local myCpu = cpu.new({ "RSIG x5, iron-plate, red" })
+		myCpu:set_wire_signals({
+			red = { ["copper-plate"] = 9 },
+			green = { ["iron-plate"] = 9 },
+		})
+		myCpu:step()
+		assert.is_false(myCpu.status.error)
+		assert.are.equal(0, myCpu:get_register("x5"))
+	end)
+
+	it("RSIG returns 0 when wires were never set (disconnected)", function()
+		local myCpu = cpu.new({ "RSIG x5, iron-plate, both" })
+		myCpu:step()
+		assert.is_false(myCpu.status.error)
+		assert.are.equal(0, myCpu:get_register("x5"))
+	end)
 end)
