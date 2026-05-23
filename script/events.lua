@@ -9,6 +9,24 @@ local function clear_output_sections(entity)
     end
 end
 
+local function read_wire_signals(entity)
+    local result = { red = {}, green = {} }
+    local wires = {
+        red = entity.get_circuit_network(defines.wire_type.red),
+        green = entity.get_circuit_network(defines.wire_type.green),
+    }
+    for color, network in pairs(wires) do
+        if network and network.signals then
+            for _, entry in pairs(network.signals) do
+                if entry.signal and entry.signal.type == "item" then
+                    result[color][entry.signal.name] = entry.count
+                end
+            end
+        end
+    end
+    return result
+end
+
 local function register_entity(entity, code)
     if entity.name == "assembly-combinator" then
         storage.assembly_combinators[entity.unit_number] = {
@@ -98,6 +116,7 @@ script.on_event(defines.events.on_tick, function()
             storage.assembly_combinators[unit_number] = nil
         else
             data.last_process_tick = game.tick
+            data.cpu:set_wire_signals(read_wire_signals(entity))
             data.cpu:step()
 
             -- Handle errors
