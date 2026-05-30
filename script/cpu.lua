@@ -18,6 +18,10 @@ function module.extract_label_name(line)
     return line:match(label_name_pattern)
 end
 
+function module.restore_metatable(cpu)
+    return setmetatable(cpu, module)
+end
+
 function module.new(code)
     local cpuClass = setmetatable({}, module)
 

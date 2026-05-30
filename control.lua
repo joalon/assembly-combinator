@@ -20,6 +20,17 @@ local function ac_dev_mode()
 	})
 end
 
+local cpu = require("script.cpu")
+
+local function restore_cpu_metatables()
+	if not storage.assembly_combinators then return end
+	for _, data in pairs(storage.assembly_combinators) do
+		if data.cpu then
+			cpu.restore_metatable(data.cpu)
+		end
+	end
+end
+
 script.on_init(function()
 	if settings.startup["assembly-combinator-dev-mode"].value then
 		ac_dev_mode()
@@ -28,11 +39,12 @@ script.on_init(function()
 end)
 
 script.on_load(function()
-	storage.assembly_combinators = storage.assembly_combinators or {}
+	restore_cpu_metatables()
 end)
 
 script.on_configuration_changed(function()
 	storage.assembly_combinators = storage.assembly_combinators or {}
+	restore_cpu_metatables()
 end)
 
 require("script.gui")

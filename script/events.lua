@@ -1,4 +1,4 @@
-local cpu = require("cpu")
+local cpu = require("script.cpu")
 
 local function clear_output_sections(entity)
     local behavior = entity.get_control_behavior()
