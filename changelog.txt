@@ -1,4 +1,9 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.8.1
+Date: 30. 05. 2026
+  Bugfixes:
+    - Restore CPU metatables on save/load so combinators keep working after reloading a save (fixes crash: attempt to call method 'set_wire_signals' (a nil value))
+---------------------------------------------------------------------------------------------------
 Version: 0.8.0
 Date: 23. 05. 2026
   Features:
